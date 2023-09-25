@@ -1,3 +1,5 @@
+import warnings
+
 import PyGage
 
 # I don't think we need to put these imports under a namespace.
@@ -62,6 +64,10 @@ class Digitizer:
         if self._digitizer_handle:
             status = PyGage.FreeSystem(self._digitizer_handle)
             if status < 0:
-                raise RuntimeWarning(f"Failed to free system.\nErrno = {status}, {PyGage.GetErrorString(status)}")
+                warnings.warn(f"Failed to free system.\nErrno = {status}, {PyGage.GetErrorString(status)}",RuntimeWarning)
+            else:
+                # Get rid of our handle value so we don't erroneously
+                # think we still have ownership of a digitizer
+                self._digitizer_handle = None
         else:
-            raise RuntimeWarning("Not attempting to free system. We don't have a reference to any digitizer.")
+            warnings.warn("Not attempting to free system. We don't have a reference to any digitizer.",RuntimeWarning)
