@@ -154,3 +154,23 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(expected_acq_config,self.digitizer.acquisition_config)
         self.assertEqual(expected_trig_config,self.digitizer.trigger_config)
         self.assertEqual(expected_chan_config,self.digitizer.channel_config)
+
+
+    def test_empty_config_exception(self):
+        with self.assertRaises(RuntimeError):
+            self.digitizer.configure()
+        
+    def test_one_empty_config_exception(self):
+        config_filename = 'tests/example-config-1.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        # manually set the config to None to simulate the config being
+        # empty. In practice, nobody should do this. But it is possible
+        # to manually set the config parameters by manually creating
+        # the NamedTuples, in which case it is possible to forget to set
+        # some of the config parameters
+        self.digitizer.channel_config = None
+
+        with self.assertRaises(RuntimeError):
+            self.digitizer.configure()

@@ -13,7 +13,7 @@ class Digitizer:
         if config_filename:
             self.load_configuration(config_filename)
         else:
-            self.acquistion_config = None
+            self.acquisition_config = None
             self.channel_config = None
             self.trigger_config = None
 
@@ -28,13 +28,13 @@ class Digitizer:
         """Initializes the digitizer"""
         status = PyGage.Initialize()
         if status < 0:
-            raise RuntimeError(f"Failed to initialize digitizer.\nErrno = {status}, {PyGage.GetErrorString(status)}")
+            raise RuntimeError(f"Failed to initialize digitizer:\nErrno = {status}, {PyGage.GetErrorString(status)}")
 
         # Get ownership of the digitizer so we can use it. Nobody else can
         # use the system once we have ownership of it.
         self._digitizer_handle = PyGage.GetSystem(0,0,0,0)
         if self._digitizer_handle < 0:
-            raise RuntimeError(f"Failed to get ownership of digitizer.\nErrno = {self._digitizer_handle}, {PyGage.GetErrorString(self._digitizer_handle)}")
+            raise RuntimeError(f"Failed to get ownership of digitizer:\nErrno = {self._digitizer_handle}, {PyGage.GetErrorString(self._digitizer_handle)}")
 
         # Get static informaton about the digitizer that's being used.
         # We will need some of the fields to convert the raw values
@@ -45,7 +45,7 @@ class Digitizer:
         # GetSystemInfo returns a dict upon success; otherwise the return
         # an int error code. The error code should be negative.
         if not isinstance(self.system_info,dict):
-            raise RuntimeError(f"Failed to get digitizer info.\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+            raise RuntimeError(f"Failed to get digitizer info:\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
         
 
     def load_configuration(self,filename):
@@ -111,7 +111,54 @@ class Digitizer:
 
 
     def configure(self):
-        pass
+        """Configures the digitizer with the instance's config parameters
+
+        """
+        # Make sure config parameters have been set
+        acq_config_is_empty = self.acquisition_config is None
+        chan_config_is_empty = self.channel_config is None
+        trig_config_is_empty = self.trigger_config is None
+        config_is_empty = [acq_config_is_empty,chan_config_is_empty,trig_config_is_empty]
+
+        if any(config_is_empty):
+            config_strings = ["acquisition","channel","trigger"]
+
+            # Get a list of which configs are empty so we can
+            # print out the empty configs in the exception
+            empty_configs = [config_string for (config_string,empty_config) 
+                in zip(config_strings,config_is_empty) if empty_config]
+            
+            raise RuntimeError("Refusing to configure the digitizer because"
+                + f"the following configs are empty: {','.join(empty_configs)}")
+
+
+        # The Set*Config() functions require a dictionary as their input,
+        # so we convert the named tuples to dictionaries
+        acquisition_config = self.acquisition_config._asdict()
+        channel_config = self.channel_config._asdict()
+        trigger_config = self.trigger_config._asdict()
+
+        # Set configuraton parameters in the device driver
+        status = PyGage.SetAcquisitionConfig(acquisition_config)
+        if status < 0:
+            raise RuntimeError("Error setting acquisition config:"
+                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+
+        status = PyGage.SetChannelConfig(channel_config)
+        if status < 0:
+            raise RuntimeError("Error setting channel config:"
+                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+
+        status = PyGage.SetTriggerConfig(trigger_config)
+        if status < 0:
+            raise RuntimeError("Error setting trigger config:"
+                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+            
+        # Commit configuration values from the driver into the hardware
+        status = PyGage.Commit(self._digitizer_handle)
+        if status < 0:
+            raise RuntimeError("Error committing settings to hardware:"
+                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
 
     def capture(self):
         pass
