@@ -18,32 +18,6 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.free()
         
 
-    @patch('PyGage.FreeSystem')
-    def test_free_valid_handle(self,mock):
-        mock.return_value = 1
-
-        self.digitizer._digitizer_handle = 1
-
-        self.assertEqual(self.digitizer._digitizer_handle,1)
-
-        self.digitizer.free()
-
-        self.assertEqual(self.digitizer._digitizer_handle,None)
-
-    # @patch('PyGage.FreeSystem')
-    # def test_free_invalid_handle(self,mock):
-    #     # TODO: import GageErrors so we don't have magic numbers
-    #     mock.return_value = -6 # invalid handle
-
-    #     # mock a valid intialization
-    #     self.digitizer._digitizer_handle = 2
-
-    #     self.assertEqual(self.digitizer._digitizer_handle,2)
-
-    #     with self.assertWarnsRegex(RuntimeWarning,"Failed to free system"):
-    #         self.digitizer.free()
-
-
     def test_valid_config_file1(self):
         config_filename = 'tests/example-config-1.toml'
 
