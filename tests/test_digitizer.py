@@ -122,3 +122,35 @@ class TestDigitizer(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.digitizer.load_configuration(config_filename)
+
+    def test_valid_config_file_load_with_constructor(self):
+        config_filename = 'tests/example-config-1.toml'
+
+        self.digitizer = Digitizer(config_filename)
+
+        # Create expected config tuples
+        expected_acq_config = AcquisitionConfig(
+            SampleRate=int(1e9),
+            Mode=CS_MODE_SINGLE,
+            SegmentCount=8,
+            SegmentSize=65536,
+            Depth=65536,
+            TriggerDelay=0
+        )
+
+        expected_trig_config = TriggerConfig(
+            Condition=CS_TRIG_COND_POS_SLOPE,
+            Level=50,
+            Range=3000,
+            Source=CS_TRIG_SOURCE_EXT
+        )
+
+        expected_chan_config = ChannelConfig(
+            Channel=1,
+            InputRange=2000,
+            DcOffset=0
+        )
+
+        self.assertEqual(expected_acq_config,self.digitizer.acquisition_config)
+        self.assertEqual(expected_trig_config,self.digitizer.trigger_config)
+        self.assertEqual(expected_chan_config,self.digitizer.channel_config)

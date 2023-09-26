@@ -9,9 +9,13 @@ class Digitizer:
     def __init__(self,config_filename=None):
         self._digitizer_handle = None
         self.system_info = None
-        self.acquistion_config = None
-        self.channel_config = None
-        self.trigger_config = None
+
+        if config_filename:
+            self.load_configuration(config_filename)
+        else:
+            self.acquistion_config = None
+            self.channel_config = None
+            self.trigger_config = None
 
     def __del__(self):
         # Explicitly free the digitizer before the instance is about to be
