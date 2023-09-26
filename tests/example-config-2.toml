@@ -8,31 +8,29 @@
 
 [trigger]
 # Trigger on rising edge. Supported values are:
-# Rising edge: "Rising","R","Positive","P",1
-# Falling edge: "Falling","F","Negative","N",0
-condition = "Rising"
+# Rising edge: "rising","r","positive","p",1
+# Falling edge: "falling","f","negative","n",0
+condition = "n"
 
 # Set trigger level to 50%
-level = 50
+level = 30
 
 # Use the full-scale 3V range for the external trigger
-range = 3000
+range = 2000
 
 # TODO: maybe we won't even support these configurations at all. Supporting
 # trigger configuration in general is probably not necessary
 
 # Default options that should not be changed for the insect lidar since we
-# have to use the external trigger:
-# coupling = "AC"
-# source = "Exernal" 
-# impedance = 1000 # I'm not sure if this is even valid
+# have to use the external trigger
+# Supported values: "external", 1 (for channel 1), 2 (for channel 2)
+source = 2 
 
 
 [acquisition]
 # For supported sample rates, see the Gage RazorMax Express datasheet.
 # We are using the CSE161G2 model, which has a max sample rate of 1 GS/s.
-sample_rate = 1e9 # 1 GS/s
-
+sample_rate = 500e6 
 
 # The number of samples to acquire per pulse / trigger event.
 # This might as well always be a power of 2, as that should be more efficient
@@ -41,23 +39,23 @@ sample_rate = 1e9 # 1 GS/s
 # We have no reason to acquire pre-trigger data, thus n_samples covers
 # both the "Depth" and "SegmentSize" options in the official INI config. Setting
 # these to the same value results in no pre-trigger data being captured.
-n_samples = 65536
+n_samples = 1024 
 
 # Trigger delay can be used to delay data acquisition by a number of samples
 # after the trigger event. This might be useful if the first handful of samples
 # occur before the light has even left the instrument
-trigger_delay = 0
+trigger_delay = 10
 
 # The number of sequential pulses to acquire. Values greater than 1 result in a
 # "multiple record acquisition", as it's referred to in the Gage documentation.
 # This parameter corresponds to the "SegmentCount" config option in the official
 # INI files
-segment_count = 8
+segment_count = 32
 
 [channel]
 # We only support single channel acquisition, but we can set which channel
 # we want to use
-channel = 1
+channel = 2
 
 # Voltage range of the input channel, in mV. The ADC's full input range is +/- 1 V,
 # so we use the full range, which is 2000 mV.
@@ -67,7 +65,7 @@ range = 2000
 # TODO: determine if there having a DC offset is useful; if the PMT truly can't
 # output positive current/voltage values, then we could add a -1000 mV offset to
 # make then input range -2 V to 0 V
-dc_offset = 0
+dc_offset = 500 
 
 # The input channels have 50 Ohm input impedance, and are DC-coupled. Since
 # these options are not software-selectable, we don't support those options,
