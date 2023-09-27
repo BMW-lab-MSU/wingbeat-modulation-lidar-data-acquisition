@@ -158,12 +158,12 @@ class Digitizer:
         status = PyGage.SetAcquisitionConfig(self._digitizer_handle,acquisition_config)
         if status < 0:
             raise RuntimeError("Error setting acquisition config:"
-                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+                + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
 
         status = PyGage.SetChannelConfig(self._digitizer_handle,channel,channel_config)
         if status < 0:
             raise RuntimeError("Error setting channel config:"
-                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+                + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
 
         # We only support using one trigger engine, so we hardcode the
         # trigger engine number to 1, which is the first trigger engine.
@@ -171,13 +171,13 @@ class Digitizer:
         status = PyGage.SetTriggerConfig(self._digitizer_handle,trigger_engine,trigger_config)
         if status < 0:
             raise RuntimeError("Error setting trigger config:"
-                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+                + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
             
         # Commit configuration values from the driver into the hardware
         status = PyGage.Commit(self._digitizer_handle)
         if status < 0:
             raise RuntimeError("Error committing settings to hardware:"
-                + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
+                + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
 
     def capture(self):
         pass
