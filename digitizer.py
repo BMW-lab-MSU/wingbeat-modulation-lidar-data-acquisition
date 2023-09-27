@@ -65,7 +65,6 @@ class Digitizer:
 
         self.acquisition_config = AcquisitionConfig(
             SampleRate=int(config['acquisition']['sample_rate']),
-            Depth=config['acquisition']['n_samples'],
             SegmentSize=config['acquisition']['n_samples'],
             TriggerDelay=config['acquisition']['trigger_delay'],
             SegmentCount=config['acquisition']['segment_count'],
@@ -105,7 +104,7 @@ class Digitizer:
         self.trigger_config = TriggerConfig(
             Condition=condition,
             Level=config['trigger']['level'],
-            Range=config['trigger']['range'],
+            ExtRange=config['trigger']['range'],
             Source=trigger_source
         )
 
@@ -138,18 +137,39 @@ class Digitizer:
         channel_config = self.channel_config._asdict()
         trigger_config = self.trigger_config._asdict()
 
+        # Hardcode the acquisition mode to single-channel since we don't
+        # have any reason to support dual-channel mode.
+        acquisition_config['Mode'] = CS_MODE_SINGLE
+
+        # The Compuscope driver expects both a SegmentSize and Depth parameter.
+        # In our case, both of these parameters ae the same since we have no
+        # reason to support capturing pre-trigger data (the pre-trigger data
+        # would be data before the laser pulse fired); thus we set Depth
+        # equal to the SegmentSize. We are forcing the depth and segment size
+        # to be the same to simplify configuration.
+        acquisition_config['Depth'] = acquisition_config['SegmentSize']
+
+        # We need to break out the Channel number parameter from the channel config
+        # dictionary because SetChannelConfig doesn't accept the channel number as
+        # part of the dictionary; the channel number is a separate input argument.
+        channel = channel_config['Channel']
+        del channel_config['Channel']
+
         # Set configuraton parameters in the device driver
-        status = PyGage.SetAcquisitionConfig(acquisition_config)
+        status = PyGage.SetAcquisitionConfig(self._digitizer_handle,acquisition_config)
         if status < 0:
             raise RuntimeError("Error setting acquisition config:"
                 + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
 
-        status = PyGage.SetChannelConfig(channel_config)
+        status = PyGage.SetChannelConfig(self._digitizer_handle,channel,channel_config)
         if status < 0:
             raise RuntimeError("Error setting channel config:"
                 + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
 
-        status = PyGage.SetTriggerConfig(trigger_config)
+        # We only support using one trigger engine, so we hardcode the
+        # trigger engine number to 1, which is the first trigger engine.
+        trigger_engine = 1
+        status = PyGage.SetTriggerConfig(self._digitizer_handle,trigger_engine,trigger_config)
         if status < 0:
             raise RuntimeError("Error setting trigger config:"
                 + f"\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
@@ -187,52 +207,36 @@ class Digitizer:
 # NOTE: we do not support pre-trigger data, forced-trigger timeouts, non-default timestamp modes,
 # dual-channel acquisition, or external clocking 
 class AcquisitionConfig(NamedTuple):
-    """Acquisition configuration values
+    """Acquisition configuration values.
 
     Attributes:
         SampleRate (int): 
-            Digitizer sampling rate
+            Digitizer sampling rate.
         SegmentCount (int):
             Number of segments to acquire. This is the number of trigger
             events to acquire.
-        Depth (int):
-            Number of samples to acquire for each trigger event
         SegmentSize (int): 
-            Number of samples to acquire for each trigger event. Should be
-            the same as Depth since we don't support acquiring
-            pre-trigger data. 
+            Number of samples to acquire for each trigger event.
         TriggerDelay (int):
             Number of samples between the trigger event and the start of
             data acquisition.
-        Mode (int):
-            Acquisition mode. We only support single-channel acquisition,
-            so this defaults to single-acquisition mode.
-
-    Notes:
-        Both Depth and SegmentSize are present because the digitizer needs both
-        of those configuration parameters, even though we want them to be the same. 
     """
-    # TODO: we could remove Depth or SegmentSize, then add it back to the dictionary
-    # before we send the configuration to the driver. This would enforce the user to
-    # make the Depth and SegmentSize the same. We could do the same thing with Mode.
     SampleRate: int
     SegmentCount: int
-    Depth: int
     SegmentSize: int
     TriggerDelay: int
-    Mode: int = CS_MODE_SINGLE
 
 class ChannelConfig(NamedTuple):
-    """Channel configuration values
+    """Channel configuration values.
 
     Attributes:
         Channel (int):
-            Channel number
+            Channel number.
         InputRange (int):
-            Input voltage range
+            Input voltage range.
         DcOffset (int):
             DC offset for the channel. This can span the full scale
-            of the input voltage range, i.e. +/-(InputRange/2)
+            of the input voltage range, i.e. +/-(InputRange/2).
     """
     Channel: int
     InputRange: int
@@ -240,19 +244,20 @@ class ChannelConfig(NamedTuple):
 
 # NOTE: we are only going to support "simple" triggering mode using 1 trigger engine
 class TriggerConfig(NamedTuple):
-    """Trigger configuration values
+    """Trigger configuration values.
 
     Attributes:
         Condition (int):
-            Trigger condition. 0 for negative-edge and 1 for positive-edge
+            Trigger condition. 0 for negative-edge and 1 for positive-edge.
         Level (int):
-            Trigger level as a percentage of the input voltage range
-        Range (int):
-            Input voltage range
+            Trigger level as a percentage of the input voltage range.
+        ExtRange (int):
+            Input voltage range for the external trigger. This is ignored
+            if the trigger source is not the external trigger.
         Source (int):
             Trigger source. See GageConstants.py for valid values.
     """
     Condition: int
     Level: int
-    Range: int
+    ExtRange: int
     Source: int

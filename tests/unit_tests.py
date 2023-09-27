@@ -26,17 +26,15 @@ class TestDigitizer(unittest.TestCase):
         # Create expected config tuples
         expected_acq_config = AcquisitionConfig(
             SampleRate=int(1e9),
-            Mode=CS_MODE_SINGLE,
             SegmentCount=8,
             SegmentSize=65536,
-            Depth=65536,
             TriggerDelay=0
         )
 
         expected_trig_config = TriggerConfig(
             Condition=CS_TRIG_COND_POS_SLOPE,
             Level=50,
-            Range=3000,
+            ExtRange=3000,
             Source=CS_TRIG_SOURCE_EXT
         )
 
@@ -59,17 +57,15 @@ class TestDigitizer(unittest.TestCase):
         # Create expected config tuples
         expected_acq_config = AcquisitionConfig(
             SampleRate=int(500e6),
-            Mode=CS_MODE_SINGLE,
             SegmentCount=32,
             SegmentSize=1024,
-            Depth=1024,
             TriggerDelay=10
         )
 
         expected_trig_config = TriggerConfig(
             Condition=CS_TRIG_COND_NEG_SLOPE,
             Level=30,
-            Range=2000,
+            ExtRange=2000,
             Source=CS_TRIG_SOURCE_CHAN_2
         )
 
@@ -105,17 +101,15 @@ class TestDigitizer(unittest.TestCase):
         # Create expected config tuples
         expected_acq_config = AcquisitionConfig(
             SampleRate=int(1e9),
-            Mode=CS_MODE_SINGLE,
             SegmentCount=8,
             SegmentSize=65536,
-            Depth=65536,
             TriggerDelay=0
         )
 
         expected_trig_config = TriggerConfig(
             Condition=CS_TRIG_COND_POS_SLOPE,
             Level=50,
-            Range=3000,
+            ExtRange=3000,
             Source=CS_TRIG_SOURCE_EXT
         )
 
