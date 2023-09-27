@@ -104,7 +104,6 @@ class Digitizer:
         self.trigger_config = TriggerConfig(
             Condition=condition,
             Level=config['trigger']['level'],
-            ExtRange=config['trigger']['range'],
             Source=trigger_source
         )
 
@@ -251,13 +250,9 @@ class TriggerConfig(NamedTuple):
             Trigger condition. 0 for negative-edge and 1 for positive-edge.
         Level (int):
             Trigger level as a percentage of the input voltage range.
-        ExtRange (int):
-            Input voltage range for the external trigger. This is ignored
-            if the trigger source is not the external trigger.
         Source (int):
             Trigger source. See GageConstants.py for valid values.
     """
     Condition: int
     Level: int
-    ExtRange: int
     Source: int

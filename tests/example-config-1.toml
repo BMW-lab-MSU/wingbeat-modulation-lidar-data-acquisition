@@ -15,11 +15,7 @@ condition = "rising"
 # Set trigger level to 50%
 level = 50
 
-# Use the full-scale 3V range for the external trigger
-range = 3000
-
-# TODO: maybe we won't even support these configurations at all. Supporting
-# trigger configuration in general is probably not necessary
+# External trigger input range isn't supported on the CSE161G2 model
 
 # Default options that should not be changed for the insect lidar since we
 # have to use the external trigger

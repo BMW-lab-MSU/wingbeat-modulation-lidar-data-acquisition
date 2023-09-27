@@ -34,7 +34,6 @@ class TestDigitizer(unittest.TestCase):
         expected_trig_config = TriggerConfig(
             Condition=CS_TRIG_COND_POS_SLOPE,
             Level=50,
-            ExtRange=3000,
             Source=CS_TRIG_SOURCE_EXT
         )
 
@@ -65,7 +64,6 @@ class TestDigitizer(unittest.TestCase):
         expected_trig_config = TriggerConfig(
             Condition=CS_TRIG_COND_NEG_SLOPE,
             Level=30,
-            ExtRange=2000,
             Source=CS_TRIG_SOURCE_CHAN_2
         )
 
@@ -109,7 +107,6 @@ class TestDigitizer(unittest.TestCase):
         expected_trig_config = TriggerConfig(
             Condition=CS_TRIG_COND_POS_SLOPE,
             Level=50,
-            ExtRange=3000,
             Source=CS_TRIG_SOURCE_EXT
         )
 
