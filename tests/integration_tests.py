@@ -33,7 +33,7 @@ class TestDigitizer(unittest.TestCase):
         self.digitizer.free()
         self.assertEqual(self.digitizer._digitizer_handle,None)
 
-    def test_valid_configuration(self):
+    def test_valid_configuration1(self):
         config_filename = 'tests/example-config-1.toml'
 
         self.digitizer.load_configuration(config_filename)
@@ -61,3 +61,33 @@ class TestDigitizer(unittest.TestCase):
             self.assertEqual(expected_acq[key],actual_acq[key])
         self.assertEqual(CS_MODE_SINGLE,actual_acq['Mode'])
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
+
+    def test_valid_configuration2(self):
+        config_filename = 'tests/example-config-2.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        self.digitizer.configure()
+
+        # Grab the configuraton dictionaries from the hardware
+        actual_acq = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle,CS_ACQUISITION_CONFIGURATION)
+        actual_chan = PyGage.GetChannelConfig(self.digitizer._digitizer_handle,self.digitizer.channel_config.Channel,CS_ACQUISITION_CONFIGURATION)
+        actual_trig = PyGage.GetTriggerConfig(self.digitizer._digitizer_handle,1,CS_ACQUISITION_CONFIGURATION)
+
+        expected_acq = self.digitizer.acquisition_config._asdict()
+        expected_chan = self.digitizer.channel_config._asdict()
+        expected_trig = self.digitizer.trigger_config._asdict()
+
+        # Check that all values we set are as expected
+        for key in expected_trig.keys():
+            self.assertEqual(expected_trig[key],actual_trig[key])
+
+        for key in expected_chan.keys():
+            if key != 'Channel':
+                self.assertEqual(expected_chan[key],actual_chan[key])
+
+        for key in expected_acq.keys():
+            self.assertEqual(expected_acq[key],actual_acq[key])
+        self.assertEqual(CS_MODE_SINGLE,actual_acq['Mode'])
+        self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
+

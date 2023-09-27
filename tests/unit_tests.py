@@ -58,17 +58,17 @@ class TestDigitizer(unittest.TestCase):
             SampleRate=int(500e6),
             SegmentCount=32,
             SegmentSize=1024,
-            TriggerDelay=10
+            TriggerDelay=0
         )
 
         expected_trig_config = TriggerConfig(
             Condition=CS_TRIG_COND_NEG_SLOPE,
             Level=30,
-            Source=CS_TRIG_SOURCE_CHAN_2
+            Source=CS_TRIG_SOURCE_CHAN_1
         )
 
         expected_chan_config = ChannelConfig(
-            Channel=2,
+            Channel=1,
             InputRange=2000,
             DcOffset=500
         )

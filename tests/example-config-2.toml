@@ -19,8 +19,8 @@ level = 30
 
 # Default options that should not be changed for the insect lidar since we
 # have to use the external trigger
-# Supported values: "external", 1 (for channel 1), 2 (for channel 2)
-source = 2 
+# Supported values for single channel mode: "external", 1 (for channel 1)
+source = 1 
 
 
 [acquisition]
@@ -40,7 +40,7 @@ n_samples = 1024
 # Trigger delay can be used to delay data acquisition by a number of samples
 # after the trigger event. This might be useful if the first handful of samples
 # occur before the light has even left the instrument
-trigger_delay = 10
+trigger_delay = 0
 
 # The number of sequential pulses to acquire. Values greater than 1 result in a
 # "multiple record acquisition", as it's referred to in the Gage documentation.
@@ -51,7 +51,7 @@ segment_count = 32
 [channel]
 # We only support single channel acquisition, but we can set which channel
 # we want to use
-channel = 2
+channel = 1
 
 # Voltage range of the input channel, in mV. The ADC's full input range is +/- 1 V,
 # so we use the full range, which is 2000 mV.
