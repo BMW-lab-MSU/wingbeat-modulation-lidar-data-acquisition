@@ -91,3 +91,18 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(CS_MODE_SINGLE,actual_acq['Mode'])
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
 
+    def test_invalid_trigger_source_config(self):
+        config_filename = 'tests/invalid-trig-source-config-2.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        with self.assertRaisesRegex(RuntimeError,'Invalid trigger source'):
+            self.digitizer.configure()
+
+    def test_invalid_dc_offset_config(self):
+        config_filename = 'tests/invalid-dc-offset-config.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        with self.assertRaisesRegex(RuntimeError,'Invalid DC offset'):
+            self.digitizer.configure()
