@@ -45,10 +45,6 @@ class TestDigitizer(unittest.TestCase):
         actual_chan = PyGage.GetChannelConfig(self.digitizer._digitizer_handle,self.digitizer.channel_config.Channel,CS_ACQUISITION_CONFIGURATION)
         actual_trig = PyGage.GetTriggerConfig(self.digitizer._digitizer_handle,1,CS_ACQUISITION_CONFIGURATION)
 
-        print(actual_acq)
-        print(actual_chan)
-        print(actual_trig)
-
         expected_acq = self.digitizer.acquisition_config._asdict()
         expected_chan = self.digitizer.channel_config._asdict()
         expected_trig = self.digitizer.trigger_config._asdict()
