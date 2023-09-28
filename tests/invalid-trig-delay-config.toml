@@ -40,7 +40,7 @@ n_samples = 1024
 # Trigger delay can be used to delay data acquisition by a number of samples
 # after the trigger event. This might be useful if the first handful of samples
 # occur before the light has even left the instrument
-trigger_delay = 64
+trigger_delay = 450 
 
 # The number of sequential pulses to acquire. Values greater than 1 result in a
 # "multiple record acquisition", as it's referred to in the Gage documentation.
