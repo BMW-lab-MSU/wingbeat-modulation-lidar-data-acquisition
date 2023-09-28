@@ -7,7 +7,18 @@ from GageConstants import CS_MODE_SINGLE,CS_TRIG_COND_POS_SLOPE,CS_TRIG_COND_NEG
 
 class Digitizer:
     def __init__(self,config_filename=None):
+        """Creates an instance of the Digitizer class.
+
+        Args:
+            config_filename (str|None):
+                The filename of a digitizer TOML configuraton file that
+                will be used to configure the digitizer settings.
+        """
+
+        # _digitizer_handle is a integer that refers to which compuscope
+        # system we are using. This is returned from PyGage.GetSystem().
         self._digitizer_handle = None
+
         self.system_info = None
 
         if config_filename:
@@ -25,7 +36,7 @@ class Digitizer:
         self.free()
 
     def initialize(self):
-        """Initializes the digitizer"""
+        """Initializes the digitizer hardware"""
         status = PyGage.Initialize()
         if status < 0:
             raise RuntimeError(f"Failed to initialize digitizer:\nErrno = {status}, {PyGage.GetErrorString(status)}")
