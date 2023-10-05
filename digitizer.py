@@ -36,7 +36,7 @@ class Digitizer:
         self.free()
 
     def initialize(self):
-        """Initializes the digitizer hardware"""
+        """Initializes the digitizer hardware."""
         status = PyGage.Initialize()
         if status < 0:
             raise RuntimeError(f"Failed to initialize digitizer:\nErrno = {status}, {PyGage.GetErrorString(status)}")
@@ -60,14 +60,15 @@ class Digitizer:
         
 
     def load_configuration(self,filename):
-        """Loads a digitizer configuration from a TOML file
+        """Loads a digitizer configuration from a TOML file.
 
         Parses a TOML configuration and puts the configuration values
         into the aquisition_config, trigger_config, and channel_config
         NamedTuples.
 
         Args:
-            filename (str): Config filename
+            filename (str):
+                Config filename.
         """
 
         # Parse toml file
@@ -120,9 +121,7 @@ class Digitizer:
 
 
     def configure(self):
-        """Configures the digitizer with the instance's config parameters
-
-        """
+        """Configures the digitizer with the instance's config parameters."""
         # Make sure config parameters have been set
         acq_config_is_empty = self.acquisition_config is None
         chan_config_is_empty = self.channel_config is None
