@@ -3,7 +3,7 @@ import tomllib
 from typing import NamedTuple
 
 import PyGage
-from GageConstants import CS_MODE_SINGLE,CS_TRIG_COND_POS_SLOPE,CS_TRIG_COND_NEG_SLOPE,CS_TRIG_SOURCE_EXT
+import GageConstants as gc
 
 class Digitizer:
     def __init__(self,config_filename=None):
@@ -90,7 +90,7 @@ class Digitizer:
         # Parse trigger source
         if isinstance(config['trigger']['source'],str):
             if config['trigger']['source'].lower() == 'external':
-                trigger_source = CS_TRIG_SOURCE_EXT
+                trigger_source = gc.CS_TRIG_SOURCE_EXT
             else:
                 raise ValueError("Invalid trigger source setting.\n"
                     + "Must be one of {\"external\",1,2}.")
@@ -103,9 +103,9 @@ class Digitizer:
         if isinstance(config['trigger']['condition'],str):
             condition = config['trigger']['condition'].lower()
             if condition in {'rising','r','positive','p'}:
-                condition = CS_TRIG_COND_POS_SLOPE
+                condition = gc.CS_TRIG_COND_POS_SLOPE
             elif condition in {'falling','f','negative','n'}:
-                condition = CS_TRIG_COND_NEG_SLOPE
+                condition = gc.CS_TRIG_COND_NEG_SLOPE
             else:
                 raise ValueError("Invalid trigger condition setting.\n"
                     + "Must be one of {\"rising\", \"r\", \"positive\", \"p\", 1, \"falling\", \"f\", \"negative\", \"n\", 0}.")
@@ -149,7 +149,7 @@ class Digitizer:
 
         # Hardcode the acquisition mode to single-channel since we don't
         # have any reason to support dual-channel mode.
-        acquisition_config['Mode'] = CS_MODE_SINGLE
+        acquisition_config['Mode'] = gc.CS_MODE_SINGLE
 
         # The Compuscope driver expects both a SegmentSize and Depth parameter.
         # In our case, both of these parameters ae the same since we have no
