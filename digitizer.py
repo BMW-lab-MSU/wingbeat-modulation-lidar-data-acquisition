@@ -1,5 +1,7 @@
 import warnings
 import tomllib
+import numpy as np
+from datetime import datetime
 from typing import NamedTuple
 
 import PyGage
@@ -190,10 +192,160 @@ class Digitizer:
                 + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
 
     def capture(self):
-        pass
+        """Initiates a data capture and returns the data.
+
+        Returns:
+            data:
+                The data matrix. The data array has size
+                (n_samples,segment_count).
+            timestamps:
+                The timestamps of each trigger event, in ns.
+            capture_start_time:
+                The date and time when the data capture was initiated.
+        
+        Raises:
+            RuntimeError:
+                An error occurred when starting the capture, getting
+                the digitizer's status, or transferring the data.
+        """
+        status = PyGage.StartCapture(self._digitizer_handle)
+        if status < 0:
+            raise RuntimeError("Error starting capture:"
+                + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
+        
+        # Save the time that we started the capture just so we have that
+        # metadata later on after the data has been saved.
+        capture_start_time = datetime.now().time()
+
+        # Poll the digitizer until the capture is done
+        status = PyGage.GetStatus(self._digitizer_handle)    
+        while status != gc.ACQ_STATUS_READY:
+            print(status)
+            if status < 0:
+                raise RuntimeError("Error getting digitizer status:"
+                    + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
+
+            status = PyGage.GetStatus(self._digitizer_handle)
+        
+        data = self._transfer_data_from_adc()
+
+        timestamps = self._transfer_timestamps()
+
+        return (data,timestamps,capture_start_time)
+
 
     def _transfer_data_from_adc(self):
-        pass
+        """Transfers data from the digitizer.
+
+        Returns:
+            data:
+                The data matrix. The data array has size 
+                (n_samples,segment_count).
+
+        Raises:
+            RuntimeError:
+                An error occured when transferring the data from
+                the digitizer.
+        """
+
+        n_segments = self.acquisition_config.SegmentCount
+        segment_size = self.acquisition_config.SegmentSize
+        start_address = self.acquisition_config.TriggerDelay
+
+        data = np.empty(shape=(segment_size,n_segments),dtype=np.int16)
+
+        # TransferData can only transfer one segment at a time, so we
+        # have to call it for each segment that was collected.
+        for segment in range(1,n_segments + 1):
+            ret = PyGage.TransferData(
+                self._digitizer_handle,self.channel_config.Channel,
+                gc.TxMODE_DEFAULT,segment,start_address,segment_size
+            )
+
+            # If there was an error, the output will be a int error code;
+            # on success, the output is a tuple.
+            if isinstance(ret,int):
+                raise RuntimeError("Error transferring data:"
+                    + f"\nErrno = {ret}, {PyGage.GetErrorString(ret)}")
+            else:
+                # PyGage.TransferData returns the actual start address
+                # and length of the data transfer, which might be
+                # different from the requested start address or length
+                # if the data had to be adjusted for alignment purposes.
+                data[:,segment - 1] = ret[0]
+                actual_start_address = ret[1]
+                transfer_length = ret[2]
+            
+            # Warn the user if the start address and transfer length
+            # were changed. This might imply that the transfered data
+            # is invalid, or that the user needs to change their
+            # digitizer settings.
+            if start_address != actual_start_address:
+                warnings.warn("Actual start address differs from requested:\n"
+                    + f"actual={actual_start_address}, requested={start_address}",
+                    RuntimeWarning)
+
+            if transfer_length != self.acquisition_config.SegmentSize:
+                warnings.warn("Actual transfer length differs from requested:\n"
+                    + f"actual={transfer_length}, "
+                    + f"requested={self.acquisition_config.SegmentSize}",
+                    RuntimeWarning)
+        
+        return data
+
+    def _transfer_timestamps(self):
+        """Gets the digitizer timestamps for each trigger event.
+
+        The timestamps start at 0.
+
+        Returns:
+            timestamps:
+                Tigger timestamps in nanoseconds.
+        
+        Raises:
+            RuntimeError:
+                An error occurred when transferring the timestamps from
+                the digitizer.
+        """
+        SEGMENT_START = 1
+
+        # For some reason, the start address for transfering
+        # timestamps is 1, not 0, even though the API documentation
+        # says the trigger address is address 0. Using address 0 is
+        # fine when transferring the data, but is not correct when
+        # transferring the timestamps. When setting start address to 0,
+        # TransferData returns an actual start address of 1 in this case.
+        START_ADDRESS = 1
+
+        ret = PyGage.TransferData(
+            self._digitizer_handle,self.channel_config.Channel,
+            gc.TxMODE_TIMESTAMP,SEGMENT_START,START_ADDRESS,
+            self.acquisition_config.SegmentCount
+        )
+        if isinstance(ret,int):
+            raise RuntimeError("Error transferring timestamps:"
+                + f"\nErrno = {ret}, {PyGage.GetErrorString(ret)}")
+        else:
+            counts = ret[0]
+
+        # Convert counts to timestamps in ns. Fractions of ns 
+        # resolution is not needed, and is not possible at this time
+        # because 1 GS/s is the fastest sampling rate any of the
+        # Compuscope digitizer's support.
+        NANOSECONDS_PER_SECOND = 1e9
+        counts_per_second = PyGage.GetTimeStampFrequency(self._digitizer_handle)
+        timestamps = np.round(counts / counts_per_second * NANOSECONDS_PER_SECOND).astype(np.int64)
+
+        # The timestamp counter starts when the capture starts, not
+        # when the first trigger event happens. Thus the first
+        # timestamp will not be 0. We're not concerned with the actual
+        # start time of the first trigger event---just the relative
+        # time between trigger events and the total duration. Thus we
+        # make the timestamps start at 0.
+        timestamps = timestamps - timestamps[0]
+
+        return timestamps
+        
 
     def convert_raw_to_volts(self,raw_value):
         pass
