@@ -26,8 +26,8 @@ class TestDigitizer(unittest.TestCase):
         # Create expected config tuples
         expected_acq_config = AcquisitionConfig(
             SampleRate=int(1e9),
-            SegmentCount=8,
-            SegmentSize=65536,
+            SegmentCount=32,
+            SegmentSize=32768,
             TriggerDelay=0
         )
 
@@ -77,6 +77,64 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(expected_trig_config,self.digitizer.trigger_config)
         self.assertEqual(expected_chan_config,self.digitizer.channel_config)
 
+    def test_valid_config_file3(self):
+        config_filename = 'tests/example-config-3.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        # Create expected config tuples
+        expected_acq_config = AcquisitionConfig(
+            SampleRate=int(875e6),
+            SegmentCount=10,
+            SegmentSize=40000,
+            TriggerDelay=0
+        )
+
+        expected_trig_config = TriggerConfig(
+            Condition=CS_TRIG_COND_POS_SLOPE,
+            Level=50,
+            Source=CS_TRIG_SOURCE_EXT
+        )
+
+        expected_chan_config = ChannelConfig(
+            Channel=1,
+            InputRange=2000,
+            DcOffset=0
+        )
+
+        self.assertEqual(expected_acq_config,self.digitizer.acquisition_config)
+        self.assertEqual(expected_trig_config,self.digitizer.trigger_config)
+        self.assertEqual(expected_chan_config,self.digitizer.channel_config)
+
+    def test_valid_config_file4(self):
+        config_filename = 'tests/example-config-4.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        # Create expected config tuples
+        expected_acq_config = AcquisitionConfig(
+            SampleRate=int(750e6),
+            SegmentCount=16,
+            SegmentSize=8192,
+            TriggerDelay=14592
+        )
+
+        expected_trig_config = TriggerConfig(
+            Condition=CS_TRIG_COND_POS_SLOPE,
+            Level=50,
+            Source=CS_TRIG_SOURCE_EXT
+        )
+
+        expected_chan_config = ChannelConfig(
+            Channel=1,
+            InputRange=2000,
+            DcOffset=0
+        )
+
+        self.assertEqual(expected_acq_config,self.digitizer.acquisition_config)
+        self.assertEqual(expected_trig_config,self.digitizer.trigger_config)
+        self.assertEqual(expected_chan_config,self.digitizer.channel_config)
+
 
     def test_config_file_invalid_trig_condition(self):
         config_filename = 'tests/invalid-trig-condition-config.toml'
@@ -99,8 +157,8 @@ class TestDigitizer(unittest.TestCase):
         # Create expected config tuples
         expected_acq_config = AcquisitionConfig(
             SampleRate=int(1e9),
-            SegmentCount=8,
-            SegmentSize=65536,
+            SegmentCount=32,
+            SegmentSize=32768,
             TriggerDelay=0
         )
 

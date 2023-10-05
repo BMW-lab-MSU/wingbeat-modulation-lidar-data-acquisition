@@ -35,7 +35,7 @@ sample_rate = 1e9 # 1 GS/s
 # We have no reason to acquire pre-trigger data, thus n_samples covers
 # both the "Depth" and "SegmentSize" options in the official INI config. Setting
 # these to the same value results in no pre-trigger data being captured.
-n_samples = 65536
+n_samples = 32768 
 
 # Trigger delay can be used to delay data acquisition by a number of samples
 # after the trigger event. This might be useful if the first handful of samples
@@ -46,7 +46,7 @@ trigger_delay = 0
 # "multiple record acquisition", as it's referred to in the Gage documentation.
 # This parameter corresponds to the "SegmentCount" config option in the official
 # INI files
-segment_count = 8
+segment_count = 32
 
 [channel]
 # We only support single channel acquisition, but we can set which channel
