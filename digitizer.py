@@ -220,7 +220,6 @@ class Digitizer:
         # Poll the digitizer until the capture is done
         status = PyGage.GetStatus(self._digitizer_handle)    
         while status != gc.ACQ_STATUS_READY:
-            print(status)
             if status < 0:
                 raise RuntimeError("Error getting digitizer status:"
                     + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
