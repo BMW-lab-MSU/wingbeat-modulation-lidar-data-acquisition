@@ -215,7 +215,7 @@ class Digitizer:
         
         # Save the time that we started the capture just so we have that
         # metadata later on after the data has been saved.
-        capture_start_time = datetime.now().time()
+        capture_start_time = str(datetime.now())
 
         # Poll the digitizer until the capture is done
         status = PyGage.GetStatus(self._digitizer_handle)    
