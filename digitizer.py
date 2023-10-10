@@ -417,3 +417,154 @@ class TriggerConfig(NamedTuple):
     Condition: int
     Level: int
     Source: int
+
+def save_as_h5(filename,data,timestamps,capture_time,system_info,
+    acquisition_config,channel_config,trigger_config,
+    data_is_volts=False,distance=None):
+    """Saves data and metadata in an h5 file.
+
+    Args:
+        filename:
+            The h5 filename to save the data to.
+        data:
+            The data array to save. Data must be 2- or 3-dimensional.
+            If it is 2-dimensional, the data must be a single capture.
+            If it is 3-dimensional, the first dimension should be the
+            number of captures.
+        timestamps:
+            The timestamps corresponding to each trigger event.
+            Timestamps can be 1- or 2-dimensional if the data is only
+            a single capture. Otherwise, the timestamps must be
+            2-dimensional, where the first dimensions is the number of
+            captures. The 2nd dimension must be equal to the 3rd
+            dimension of `data`.
+        capture_time:
+            Datetime strings corresponding to the start of each capture.
+            The length of this argument must be equal to the number of
+            captures taken, which is the first dimension of data and
+            timestamps.
+        system_info:
+            `system_info` field of the digitizer object that captured
+            the data.
+        acquisition_config:
+            `acquisition_config` field of the digitizer object that
+            captured the data.
+        channel_config:
+            `channel_config` field of the digitizer object that
+            captured the data.
+        trigger_config:
+            `trigger_config` field of the digitizer object that
+            captured the data.
+        data_is_volts:
+            Whether or not the captured data has units of volts.
+        distance:
+            Vector that maps range bins to distances. If not `None`,
+            this vector must be the same length as the 2nd dimension
+            of `data`. This vector is created from the `rangecal` module.
+
+    Raises:
+        ValueError:
+            If dimensions of the input data do not match.
+    """
+    with h5py.File(filename,"w") as h5file:
+
+        # Ensure the input dimensions match. If multiple captures were
+        # taken, then the first dimension of all the inputs must match;
+        # if there is only one capture, then we add a new singleton
+        # dimension to make it so the data is always 3-dimensional.
+        # In general, we expect data to be an array of captures of shape
+        # (# of captures,# of samples,# of segments). If the data is
+        # only a single capture, rather than an array of captures, we need
+        # to force the shape to (1,# of samples,# of segments)
+
+        # Add a new singleton dimension if the data is for a single capture
+        if data.ndim == 2:
+            data = np.expand_dims(data,axis=0)
+        if timestamps.ndim == 1:
+            timestamps = np.expand_dims(timestamps,axis=0)
+        if isinstance(capture_time,str):
+            capture_time = np.array([capture_time],dtype=np.bytes_)
+            capture_time = np.expand_dims(capture_time,axis=0)
+
+        # Ensure that the first dimensions are all the same
+        first_dimensions_match = data.shape[0] == timestamps.shape[0] \
+            and data.shape[0] == capture_time.shape[0]
+        if not first_dimensions_match:
+            raise ValueError("First dimension of inputs must match.\n"
+                + f"first dimensions: data={data.shape[0]}, "
+                + f"timestamps={timestamps.shape[0]}, "
+                + f"capture_time={capture_time.shape[0]}")
+
+        # Ensure that the length of the timestamps is equal to the
+        # number of segments in each capture.
+        if data.shape[2] != timestamps.shape[1]:
+            raise ValueError("Timestamp dimension doesn't match the"
+                + f" number of segments.\ndata.shape[2]={data.shape[2]}"
+                + f", timestamps.shape[1]={timestamps.shape[1]}")
+
+        # Ensure that the length of the distance vector is the same as
+        # the number of sample / range bins.
+        if distance is not None:
+            if data.shape[1] != len(distance):
+                raise ValueError("Distance dimension doesn't match the"
+                    + " number of range bins.\n"
+                    + f"# of range bins={data.shape[1]}"
+                    + f", len(distance)={len(distance)}")
+
+        # Create datasets under the 'data' group
+        h5file.create_group('data')
+        h5file['data/data'] = data
+        h5file['data/timestamps'] = timestamps
+        h5file['data/capture_time'] = capture_time
+        if distance is not None:
+            h5file['data/distance'] = distance
+
+        h5file['data/timestamps'].attrs['units'] = 'ns'
+        # TODO: the data could also be raw instead of volts.
+        # Think more about how to handle this... There are a lot
+        # of parameters being passed in here. The Digitizer class
+        # doesn't dictate whether the user uses volts, does range calibration,
+        # etc., which then puts the onus on the user to do all of that
+        # and pass the appropriate arguments into this functon...
+        # The decision of making the digitizer only handle "mechanism",
+        # and not "policy", has tradeoffs here.
+        if data_is_volts:
+            h5file['data/data'].attrs['units'] = 'V'
+        else:
+            h5file['data/data'].attrs['units'] = 'ADC count'
+
+        if distance is not None:
+            h5file['data/distance'].attrs['units'] = 'm'
+
+        # Add dimension labels
+        h5file['data/data'].dims[0].label = 'capture #'
+
+        if distance is not None:
+            h5file['data/data'].dims[1].label = 'distance'
+        else:
+            h5file['data/data'].dims[1].label = 'range bin'
+
+        h5file['data/data'].dims[2].label = 'time'
+
+        # Link the distance dataset as a dimension scale, if it exists
+        if distance is not None:
+            h5file['data/distance'].make_scale('distance')
+            h5file['data/data'].dims[1].attach_scale(h5file['data/distance'])
+
+        # Add attibutes for system info metadata
+        h5file.create_group('digitizer/info')
+        for key,val in system_info.items():
+            h5file['digitizer/info'].attrs[key] = val
+
+        # Add attributes for digitizer config
+        h5file.create_group('digitizer/config/acquisition')
+        for key,val in acquisition_config._asdict().items():
+            h5file['digitizer/config/acquisition'].attrs[key] = val
+
+        h5file.create_group('digitizer/config/channel')
+        for key,val in channel_config._asdict().items():
+            h5file['digitizer/config/channel'].attrs[key] = val
+
+        h5file.create_group('digitizer/config/trigger')
+        for key,val in trigger_config._asdict().items():
+            h5file['digitizer/config/trigger'].attrs[key] = val
