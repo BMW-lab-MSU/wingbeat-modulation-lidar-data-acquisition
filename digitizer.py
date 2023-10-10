@@ -1,5 +1,6 @@
 import warnings
 import tomllib
+import h5py
 import numpy as np
 from datetime import datetime
 from typing import NamedTuple
@@ -54,12 +55,12 @@ class Digitizer:
         # into voltages. The rest of the information is not necesarry,
         # but we might as well save that metadata.
         self.system_info = PyGage.GetSystemInfo(self._digitizer_handle)
-        
+
         # GetSystemInfo returns a dict upon success; otherwise the return
         # an int error code. The error code should be negative.
         if not isinstance(self.system_info,dict):
             raise RuntimeError(f"Failed to get digitizer info:\nErrno = {self.system_info}, {PyGage.GetErrorString(self.system_info)}")
-        
+
 
     def load_configuration(self,filename):
         """Loads a digitizer configuration from a TOML file.
@@ -135,9 +136,9 @@ class Digitizer:
 
             # Get a list of which configs are empty so we can
             # print out the empty configs in the exception
-            empty_configs = [config_string for (config_string,empty_config) 
+            empty_configs = [config_string for (config_string,empty_config)
                 in zip(config_strings,config_is_empty) if empty_config]
-            
+
             raise RuntimeError("Refusing to configure the digitizer because"
                 + f"the following configs are empty: {','.join(empty_configs)}")
 
@@ -184,7 +185,7 @@ class Digitizer:
         if status < 0:
             raise RuntimeError("Error setting trigger config:"
                 + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
-            
+
         # Commit configuration values from the driver into the hardware
         status = PyGage.Commit(self._digitizer_handle)
         if status < 0:
@@ -202,7 +203,7 @@ class Digitizer:
                 The timestamps of each trigger event, in ns.
             capture_start_time:
                 The date and time when the data capture was initiated.
-        
+
         Raises:
             RuntimeError:
                 An error occurred when starting the capture, getting
@@ -212,20 +213,20 @@ class Digitizer:
         if status < 0:
             raise RuntimeError("Error starting capture:"
                 + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
-        
+
         # Save the time that we started the capture just so we have that
         # metadata later on after the data has been saved.
         capture_start_time = str(datetime.now())
 
         # Poll the digitizer until the capture is done
-        status = PyGage.GetStatus(self._digitizer_handle)    
+        status = PyGage.GetStatus(self._digitizer_handle)
         while status != gc.ACQ_STATUS_READY:
             if status < 0:
                 raise RuntimeError("Error getting digitizer status:"
                     + f"\nErrno = {status}, {PyGage.GetErrorString(status)}")
 
             status = PyGage.GetStatus(self._digitizer_handle)
-        
+
         data = self._transfer_data_from_adc()
 
         timestamps = self._transfer_timestamps()
@@ -238,7 +239,7 @@ class Digitizer:
 
         Returns:
             data:
-                The data matrix. The data array has size 
+                The data matrix. The data array has size
                 (n_samples,segment_count).
 
         Raises:
@@ -274,7 +275,7 @@ class Digitizer:
                 data[:,segment - 1] = ret[0]
                 actual_start_address = ret[1]
                 transfer_length = ret[2]
-            
+
             # Warn the user if the start address and transfer length
             # were changed. This might imply that the transfered data
             # is invalid, or that the user needs to change their
@@ -289,7 +290,7 @@ class Digitizer:
                     + f"actual={transfer_length}, "
                     + f"requested={self.acquisition_config.SegmentSize}",
                     RuntimeWarning)
-        
+
         return data
 
     def _transfer_timestamps(self):
@@ -300,7 +301,7 @@ class Digitizer:
         Returns:
             timestamps:
                 Tigger timestamps in nanoseconds.
-        
+
         Raises:
             RuntimeError:
                 An error occurred when transferring the timestamps from
@@ -327,7 +328,7 @@ class Digitizer:
         else:
             counts = ret[0]
 
-        # Convert counts to timestamps in ns. Fractions of ns 
+        # Convert counts to timestamps in ns. Fractions of ns
         # resolution is not needed, and is not possible at this time
         # because 1 GS/s is the fastest sampling rate any of the
         # Compuscope digitizer's support.
@@ -344,7 +345,7 @@ class Digitizer:
         timestamps = timestamps - timestamps[0]
 
         return timestamps
-        
+
 
     def convert_raw_to_volts(self,raw_value):
         pass
@@ -365,17 +366,17 @@ class Digitizer:
 
 
 # NOTE: we do not support pre-trigger data, forced-trigger timeouts, non-default timestamp modes,
-# dual-channel acquisition, or external clocking 
+# dual-channel acquisition, or external clocking
 class AcquisitionConfig(NamedTuple):
     """Acquisition configuration values.
 
     Attributes:
-        SampleRate (int): 
+        SampleRate (int):
             Digitizer sampling rate.
         SegmentCount (int):
             Number of segments to acquire. This is the number of trigger
             events to acquire.
-        SegmentSize (int): 
+        SegmentSize (int):
             Number of samples to acquire for each trigger event.
         TriggerDelay (int):
             Number of samples between the trigger event and the start of
