@@ -1,5 +1,6 @@
 import unittest
 import h5py
+import os
 
 
 # import PyGage
@@ -289,6 +290,8 @@ class TestDigitizer(unittest.TestCase):
             self.assertTrue(np.array_equiv(h5file['data/timestamps'],timestamps))
             self.assertEqual(h5file['data/capture_time'][0,0].decode(),capture_time)
 
+        os.remove(h5_filename)
+
     def test_save_h5_file_multiple_images(self):
         # NOTE: this could be written as a unit test with mock data
         # and config values instead of actually capturing an image
@@ -354,6 +357,8 @@ class TestDigitizer(unittest.TestCase):
             self.assertTrue(np.array_equal(h5file['data/data'],data))
             self.assertTrue(np.array_equal(h5file['data/timestamps'],timestamps))
             self.assertTrue(np.array_equal(h5file['data/capture_time'],capture_time))
+
+        os.remove(h5_filename)
 
     def test_save_h5_file_first_dimensions_unequal(self):
         config_filename = 'tests/example-config-1.toml'
