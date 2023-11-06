@@ -90,7 +90,7 @@ class TestDigitizer(unittest.TestCase):
 
         for key in expected_acq.keys():
             self.assertEqual(expected_acq[key],actual_acq[key])
-        self.assertEqual(CS_MODE_SINGLE,actual_acq['Mode'])
+
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
 
     def test_valid_configuration3(self):

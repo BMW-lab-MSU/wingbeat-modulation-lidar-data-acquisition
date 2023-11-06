@@ -24,6 +24,8 @@ source = 1
 
 
 [acquisition]
+mode = "dual"
+
 # For supported sample rates, see the Gage RazorMax Express datasheet.
 # We are using the CSE161G2 model, which has a max sample rate of 1 GS/s.
 sample_rate = 500e6 
@@ -49,9 +51,7 @@ trigger_delay = 0
 segment_count = 32
 
 [channel]
-# We only support single channel acquisition, but we can set which channel
-# we want to use
-channel = 1
+channel = 2
 
 # Voltage range of the input channel, in mV. The ADC's full input range is +/- 1 V,
 # so we use the full range, which is 2000 mV.

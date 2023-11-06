@@ -78,11 +78,33 @@ class Digitizer:
         with open(filename,'rb') as f:
             config = tomllib.load(f)
 
+        # Parse the acquisition mode. Acqusition mode can be one of:
+        # - "single" / 1
+        # - "dual" / 2
+        # - "quad" / 4
+        # - "oct" / 8
+        # Not all digitizer cards support all modes, e.g. a dual-channel
+        # card can't support 4 or 8 channel mode.
+        if isinstance(config['acquisition']['mode'],str):
+            mode = config['acquisition']['mode'].lower()
+        else:
+            mode = config['acquisition']['mode']
+
+        if mode in {'single',1}:
+            mode = gc.CS_MODE_SINGLE
+        elif mode in {'dual',2}:
+            mode = gc.CS_MODE_DUAL
+        elif mode in {'quad',4}:
+            mode = gc.CS_MODE_QUAD
+        elif mode in {'oct',8}:
+            mode = gc.CS_MODE_OCT
+
         self.acquisition_config = AcquisitionConfig(
             SampleRate=int(config['acquisition']['sample_rate']),
             SegmentSize=config['acquisition']['n_samples'],
             TriggerDelay=config['acquisition']['trigger_delay'],
             SegmentCount=config['acquisition']['segment_count'],
+            Mode=mode
         )
 
         self.channel_config = ChannelConfig(
@@ -148,10 +170,6 @@ class Digitizer:
         acquisition_config = self.acquisition_config._asdict()
         channel_config = self.channel_config._asdict()
         trigger_config = self.trigger_config._asdict()
-
-        # Hardcode the acquisition mode to single-channel since we don't
-        # have any reason to support dual-channel mode.
-        acquisition_config['Mode'] = gc.CS_MODE_SINGLE
 
         # The Compuscope driver expects both a SegmentSize and Depth parameter.
         # In our case, both of these parameters ae the same since we have no
@@ -386,6 +404,7 @@ class AcquisitionConfig(NamedTuple):
     SegmentCount: int
     SegmentSize: int
     TriggerDelay: int
+    Mode: int
 
 class ChannelConfig(NamedTuple):
     """Channel configuration values.

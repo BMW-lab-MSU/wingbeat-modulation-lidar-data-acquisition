@@ -22,6 +22,8 @@ source = 1
 
 
 [acquisition]
+mode = "single"
+
 # For supported sample rates, see the Gage RazorMax Express datasheet.
 # We are using the CSE161G2 model, which has a max sample rate of 1 GS/s.
 sample_rate = 550e6 

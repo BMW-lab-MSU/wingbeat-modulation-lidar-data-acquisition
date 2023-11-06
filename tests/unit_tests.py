@@ -28,7 +28,8 @@ class TestDigitizer(unittest.TestCase):
             SampleRate=int(1e9),
             SegmentCount=32,
             SegmentSize=32768,
-            TriggerDelay=0
+            TriggerDelay=0,
+            Mode = CS_MODE_SINGLE
         )
 
         expected_trig_config = TriggerConfig(
@@ -58,7 +59,8 @@ class TestDigitizer(unittest.TestCase):
             SampleRate=int(500e6),
             SegmentCount=32,
             SegmentSize=1024,
-            TriggerDelay=0
+            TriggerDelay=0,
+            Mode = CS_MODE_DUAL
         )
 
         expected_trig_config = TriggerConfig(
@@ -68,7 +70,7 @@ class TestDigitizer(unittest.TestCase):
         )
 
         expected_chan_config = ChannelConfig(
-            Channel=1,
+            Channel=2,
             InputRange=2000,
             DcOffset=500
         )
@@ -87,7 +89,8 @@ class TestDigitizer(unittest.TestCase):
             SampleRate=int(875e6),
             SegmentCount=10,
             SegmentSize=40000,
-            TriggerDelay=0
+            TriggerDelay=0,
+            Mode = CS_MODE_SINGLE
         )
 
         expected_trig_config = TriggerConfig(
@@ -116,7 +119,8 @@ class TestDigitizer(unittest.TestCase):
             SampleRate=int(750e6),
             SegmentCount=16,
             SegmentSize=8192,
-            TriggerDelay=14592
+            TriggerDelay=14592,
+            Mode = CS_MODE_SINGLE
         )
 
         expected_trig_config = TriggerConfig(
@@ -159,7 +163,8 @@ class TestDigitizer(unittest.TestCase):
             SampleRate=int(1e9),
             SegmentCount=32,
             SegmentSize=32768,
-            TriggerDelay=0
+            TriggerDelay=0,
+            Mode = CS_MODE_SINGLE
         )
 
         expected_trig_config = TriggerConfig(
