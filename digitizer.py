@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import NamedTuple
 
 import PyGage
-import GageConstants as gc
+from gagesupport import GageConstants as gc
 
 class Digitizer:
     def __init__(self,config_filename=None):

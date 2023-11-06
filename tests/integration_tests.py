@@ -5,7 +5,7 @@ import os
 
 # import PyGage
 
-from GageConstants import *
+from gagesupport.GageConstants import *
 from digitizer import *
 
 class TestDigitizer(unittest.TestCase):

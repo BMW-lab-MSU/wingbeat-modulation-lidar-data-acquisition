@@ -3,7 +3,7 @@ from unittest.mock import Mock, MagicMock, patch
 
 # import PyGage
 
-from GageConstants import *
+from gagesupport.GageConstants import *
 from digitizer import *
 
 class TestDigitizer(unittest.TestCase):
@@ -202,3 +202,4 @@ class TestDigitizer(unittest.TestCase):
 
         with self.assertRaises(RuntimeError):
             self.digitizer.configure()
+
