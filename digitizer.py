@@ -365,8 +365,62 @@ class Digitizer:
         return timestamps
 
 
-    def convert_raw_to_volts(self,raw_value):
-        pass
+    def convert_to_volts(self,raw_data):
+        """Converts raw ADC data to voltages
+
+        Args:
+            raw_data:
+                The input data, with units of "ADC code"
+
+        Returns:
+            voltage_data:
+                The input data, with units of Volts instead of "ADC code".
+
+        Raises:
+            RuntimeError:
+                If the driver's acquisition configuration can't be returned.
+
+        Notes:
+            The voltage conversion equation is documented in the
+            "Gage CompuScope SDK for C/C# Manual".
+
+            Essentially, each digitizer has a particular resolution, defined by
+            the data type (e.g. 16-bit signed integers), and a sample offset.
+            The raw ADC code, which is an integer of the data type that the
+            digitizer supports, is converted into a percentage of the ADC's
+            full-scale input voltage range; the percentage is multiplied by the
+            full-scale voltage range, and then the DC offset is added.
+
+            The "resolution" in the equation is not actually the data type's
+            resolution in the traditional sense; it's the maximum negative
+            integer for the data type.
+        """
+
+        # Get the acquisition config from the driver. We need to query the
+        # SampleOffset and SampleResolution values from the driver; we never
+        # explicitly configure those values because they are constant for a
+        # particular digitizer model.
+        ret = PyGage.GetAcquisitionConfig(self._digitizer_handle)
+        if isinstance(ret,int):
+            raise RuntimeError("Error getting acquisition config:"
+                + f"\nErrno = {ret}, {PyGage.GetErrorString(ret)}")
+        else:
+            acq_config = ret
+
+        sample_offset = acq_config['SampleOffset']
+        sample_resolution = acq_config['SampleResolution']
+
+        # Voltage ranges are given and reported in millivolts in the config
+        # and in the driver. However, we want our voltages to have units of
+        # V, not mV, so we convert mV to V.
+        input_range = self.channel_config.InputRange / 1000
+        dc_offset = self.channel_config.DcOffset / 1000
+
+        voltage_data = ((sample_offset - raw_data)/sample_resolution
+                * (input_range/2) + dc_offset)
+
+        return voltage_data
+
 
     def free(self):
         """Frees the digitizer so other applications can use it."""

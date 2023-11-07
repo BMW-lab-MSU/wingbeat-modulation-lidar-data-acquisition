@@ -3,7 +3,7 @@ import h5py
 import os
 
 
-# import PyGage
+import PyGage
 
 from gagesupport.GageConstants import *
 from digitizer import *
@@ -227,6 +227,75 @@ class TestDigitizer(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError,'Invalid DC offset'):
             self.digitizer.configure()
+
+    def test_voltage_conversion_no_dc_offset(self):
+        config_filename = 'tests/example-config-1.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        # Voltages are reported in mV, but we want them in V
+        voltage_range = self.digitizer.channel_config.InputRange/1000
+        dc_offset = self.digitizer.channel_config.DcOffset/1000
+
+        # Get sample offset and resolution information from the digitizer. Sample resolution from
+        # the digitizer is -2^(n_bits - 1)
+        sample_offset = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle)['SampleOffset']
+        sample_resolution = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle)['SampleResolution']
+        n_bits = np.log2(np.abs(sample_resolution)) + 1
+
+        # Create all possible ADC codes that the digitizer's data type can represent
+        adc_codes = np.linspace(-2**(n_bits - 1),2**(n_bits - 1) - 1, int(2**n_bits))
+
+        # ADC code 0 is not necessarily 0 Volts. The code for sample_offset is 0 Volts.
+        # Thus we need to adjust the voltage range based upon the sample offset.
+        expected_voltages = np.linspace(-voltage_range/2 + (sample_offset/sample_resolution),
+                voltage_range//2 + (sample_offset//sample_resolution), int(2**n_bits)) + dc_offset
+
+        actual_voltages = self.digitizer.convert_to_volts(adc_codes)
+
+        self.assertEqual(np.linalg.norm(expected_voltages - actual_voltages),0)
+
+    def test_voltage_conversion_no_dc_offset_zero_volts_matrix(self):
+        config_filename = 'tests/example-config-1.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        voltage_range = self.digitizer.channel_config.InputRange/1000
+        dc_offset = self.digitizer.channel_config.DcOffset/1000
+
+        sample_offset = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle)['SampleOffset']
+        sample_resolution = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle)['SampleResolution']
+        n_bits = np.log2(np.abs(sample_resolution)) + 1
+
+        # The sample offset is equal to 0 Volts
+        adc_codes = np.ones((1024,2048)) * sample_offset
+        
+        expected_voltages = np.zeros((1024,2048))
+
+        actual_voltages = self.digitizer.convert_to_volts(adc_codes)
+
+        self.assertEqual(np.linalg.norm(expected_voltages - actual_voltages),0)
+
+    def test_voltage_conversion_dc_offset(self):
+        config_filename = 'tests/example-config-2.toml'
+
+        self.digitizer.load_configuration(config_filename)
+
+        voltage_range = self.digitizer.channel_config.InputRange/1000
+        dc_offset = self.digitizer.channel_config.DcOffset/1000
+
+        sample_offset = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle)['SampleOffset']
+        sample_resolution = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle)['SampleResolution']
+        n_bits = np.log2(np.abs(sample_resolution)) + 1
+
+        adc_codes = np.linspace(-2**(n_bits - 1),2**(n_bits - 1) - 1, int(2**n_bits))
+
+        expected_voltages = np.linspace(-voltage_range/2 + (sample_offset/sample_resolution),
+                voltage_range//2 + (sample_offset//sample_resolution), int(2**n_bits)) + dc_offset
+
+        actual_voltages = self.digitizer.convert_to_volts(adc_codes)
+
+        self.assertEqual(np.linalg.norm(expected_voltages - actual_voltages),0)
 
     def test_save_h5_file_single_image(self):
         # NOTE: this could be written as a unit test with mock data
