@@ -6,7 +6,7 @@ import os
 import PyGage
 
 from gagesupport.GageConstants import *
-from digitizer import *
+from data_acquisition.digitizer import *
 
 class TestDigitizer(unittest.TestCase):
 
@@ -36,7 +36,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(self.digitizer._digitizer_handle,None)
 
     def test_valid_configuration1(self):
-        config_filename = 'tests/example-config-1.toml'
+        config_filename = 'adc-configs/example-config-1.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -65,7 +65,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
 
     def test_valid_configuration2(self):
-        config_filename = 'tests/example-config-2.toml'
+        config_filename = 'adc-configs/example-config-2.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -94,7 +94,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
 
     def test_valid_configuration3(self):
-        config_filename = 'tests/example-config-3.toml'
+        config_filename = 'adc-configs/example-config-3.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -123,7 +123,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
 
     def test_valid_configuration4(self):
-        config_filename = 'tests/example-config-4.toml'
+        config_filename = 'adc-configs/example-config-4.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -152,7 +152,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
 
     def test_valid_configuration_trig_delay(self):
-        config_filename = 'tests/example-config-trig-delay.toml'
+        config_filename = 'adc-configs/example-config-trig-delay.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -181,7 +181,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(actual_acq['Depth'],actual_acq['SegmentSize'])
 
     def test_invalid_trig_delay_config(self):
-        config_filename = 'tests/invalid-trig-delay-config.toml'
+        config_filename = 'adc-configs/invalid-trig-delay-config.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -189,7 +189,7 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.configure()
 
     def test_invalid_n_samples_config(self):
-        config_filename = 'tests/invalid-n-samples-config.toml'
+        config_filename = 'adc-configs/invalid-n-samples-config.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -197,7 +197,7 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.configure()
 
     def test_invalid_sample_rate_config1(self):
-        config_filename = 'tests/invalid-sample-rate-config-1.toml'
+        config_filename = 'adc-configs/invalid-sample-rate-config-1.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -205,7 +205,7 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.configure()
 
     def test_invalid_sample_rate_config2(self):
-        config_filename = 'tests/invalid-sample-rate-config-2.toml'
+        config_filename = 'adc-configs/invalid-sample-rate-config-2.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -213,7 +213,7 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.configure()
 
     def test_invalid_trigger_source_config(self):
-        config_filename = 'tests/invalid-trig-source-config-2.toml'
+        config_filename = 'adc-configs/invalid-trig-source-config-2.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -221,7 +221,7 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.configure()
 
     def test_invalid_dc_offset_config(self):
-        config_filename = 'tests/invalid-dc-offset-config.toml'
+        config_filename = 'adc-configs/invalid-dc-offset-config.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -229,7 +229,7 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.configure()
 
     def test_voltage_conversion_no_dc_offset(self):
-        config_filename = 'tests/example-config-1.toml'
+        config_filename = 'adc-configs/example-config-1.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -256,7 +256,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(np.linalg.norm(expected_voltages - actual_voltages),0)
 
     def test_voltage_conversion_no_dc_offset_zero_volts_matrix(self):
-        config_filename = 'tests/example-config-1.toml'
+        config_filename = 'adc-configs/example-config-1.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -277,7 +277,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(np.linalg.norm(expected_voltages - actual_voltages),0)
 
     def test_voltage_conversion_dc_offset(self):
-        config_filename = 'tests/example-config-2.toml'
+        config_filename = 'adc-configs/example-config-2.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -301,8 +301,8 @@ class TestDigitizer(unittest.TestCase):
         # NOTE: this could be written as a unit test with mock data
         # and config values instead of actually capturing an image
         # with the digitizer.
-        config_filename = 'tests/example-config-1.toml'
-        h5_filename = 'tests/test.h5'
+        config_filename = 'adc-configs/example-config-1.toml'
+        h5_filename = 'test.h5'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -365,8 +365,8 @@ class TestDigitizer(unittest.TestCase):
         # NOTE: this could be written as a unit test with mock data
         # and config values instead of actually capturing an image
         # with the digitizer.
-        config_filename = 'tests/example-config-1.toml'
-        h5_filename = 'tests/test.h5'
+        config_filename = 'adc-configs/example-config-1.toml'
+        h5_filename = 'test.h5'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -430,8 +430,8 @@ class TestDigitizer(unittest.TestCase):
         os.remove(h5_filename)
 
     def test_save_h5_file_first_dimensions_unequal(self):
-        config_filename = 'tests/example-config-1.toml'
-        h5_filename = 'tests/test.h5'
+        config_filename = 'adc-configs/example-config-1.toml'
+        h5_filename = 'test.h5'
 
         self.digitizer.load_configuration(config_filename)
         self.digitizer.configure()
@@ -446,8 +446,8 @@ class TestDigitizer(unittest.TestCase):
                 self.digitizer.channel_config,self.digitizer.trigger_config)
 
     def test_save_h5_file_bad_timestamp_dimension(self):
-        config_filename = 'tests/example-config-1.toml'
-        h5_filename = 'tests/test.h5'
+        config_filename = 'adc-configs/example-config-1.toml'
+        h5_filename = 'test.h5'
 
         self.digitizer.load_configuration(config_filename)
         self.digitizer.configure()
@@ -462,8 +462,8 @@ class TestDigitizer(unittest.TestCase):
                 self.digitizer.channel_config,self.digitizer.trigger_config)
 
     def test_save_h5_file_bad_distance_dimension(self):
-        config_filename = 'tests/example-config-1.toml'
-        h5_filename = 'tests/test.h5'
+        config_filename = 'adc-configs/example-config-1.toml'
+        h5_filename = 'test.h5'
 
         self.digitizer.load_configuration(config_filename)
         self.digitizer.configure()
@@ -480,6 +480,6 @@ class TestDigitizer(unittest.TestCase):
                 distance=distance)
 
 
-    # TODO: add save_h5 tests for scenarios where we do range calibration
+    # TODO: add save_h5 adc-configs for scenarios where we do range calibration
     # and voltage conversion
 

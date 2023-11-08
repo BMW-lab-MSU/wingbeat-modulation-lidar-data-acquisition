@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data_acquisition"
+version = "0.1.0"
+authors = [
+    { name = "Trevor Vannoy", email = "trevorvannoy@montana.edu"}
+]
+description = "Data acquisition code for the wingbeat-modulation lidar"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: POSIX :: Linux" 
+]

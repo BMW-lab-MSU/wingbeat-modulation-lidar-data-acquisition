@@ -4,7 +4,7 @@ from unittest.mock import Mock, MagicMock, patch
 # import PyGage
 
 from gagesupport.GageConstants import *
-from digitizer import *
+from data_acquisition.digitizer import *
 
 class TestDigitizer(unittest.TestCase):
 
@@ -19,7 +19,7 @@ class TestDigitizer(unittest.TestCase):
         
 
     def test_valid_config_file1(self):
-        config_filename = 'tests/example-config-1.toml'
+        config_filename = 'adc-configs/example-config-1.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -50,7 +50,7 @@ class TestDigitizer(unittest.TestCase):
     
 
     def test_valid_config_file2(self):
-        config_filename = 'tests/example-config-2.toml'
+        config_filename = 'adc-configs/example-config-2.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -80,7 +80,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(expected_chan_config,self.digitizer.channel_config)
 
     def test_valid_config_file3(self):
-        config_filename = 'tests/example-config-3.toml'
+        config_filename = 'adc-configs/example-config-3.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -110,7 +110,7 @@ class TestDigitizer(unittest.TestCase):
         self.assertEqual(expected_chan_config,self.digitizer.channel_config)
 
     def test_valid_config_file4(self):
-        config_filename = 'tests/example-config-4.toml'
+        config_filename = 'adc-configs/example-config-4.toml'
 
         self.digitizer.load_configuration(config_filename)
 
@@ -141,20 +141,20 @@ class TestDigitizer(unittest.TestCase):
 
 
     def test_config_file_invalid_trig_condition(self):
-        config_filename = 'tests/invalid-trig-condition-config.toml'
+        config_filename = 'adc-configs/invalid-trig-condition-config.toml'
 
         with self.assertRaises(ValueError):
             self.digitizer.load_configuration(config_filename)
 
 
     def test_config_file_invalid_trig_source(self):
-        config_filename = 'tests/invalid-trig-source-config.toml'
+        config_filename = 'adc-configs/invalid-trig-source-config.toml'
 
         with self.assertRaises(ValueError):
             self.digitizer.load_configuration(config_filename)
 
     def test_valid_config_file_load_with_constructor(self):
-        config_filename = 'tests/example-config-1.toml'
+        config_filename = 'adc-configs/example-config-1.toml'
 
         self.digitizer = Digitizer(config_filename)
 
@@ -189,7 +189,7 @@ class TestDigitizer(unittest.TestCase):
             self.digitizer.configure()
         
     def test_one_empty_config_exception(self):
-        config_filename = 'tests/example-config-1.toml'
+        config_filename = 'adc-configs/example-config-1.toml'
 
         self.digitizer.load_configuration(config_filename)
 
