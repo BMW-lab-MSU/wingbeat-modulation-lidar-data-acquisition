@@ -6,7 +6,7 @@ import os
 import PyGage
 
 from gagesupport.GageConstants import *
-from data_acquisition.digitizer import *
+from wingbeat_lidar.digitizer import *
 
 class TestDigitizer(unittest.TestCase):
 
