@@ -1,3 +1,29 @@
+"""This module provides an interface to Gage digitizers.
+
+This module allows users to capture data from a Gage digitizer. The digitizer
+is configured via a TOML configuration file. Once the configuration file has
+been loaded and the digitizer has been configured, data can then be captured
+and saved.
+
+.. _Gage digitizers: https://vitrek.com/gage/digitizers/
+
+Examples:
+    Loading configuration in constructor:
+        digitizer = Digitizer("config.toml")
+        digitizer.initialize()
+        digitizer.configure()
+        (data,timestamps,capture_time) = digitizer.capture()
+
+    Loading configuration separately:
+        digitizer = Digitizer()
+        digitizer.initialize()
+        digitizer.load_configuration("config.toml")
+        digitizer.configure()
+        (data,timestamps,capture_time) = digitizer.capture()
+"""
+
+# SPDX-License-Identifier: BSD-3-Clause
+
 import warnings
 import tomllib
 import h5py
@@ -14,7 +40,7 @@ class Digitizer:
 
         Args:
             config_filename (str|None):
-                The filename of a digitizer TOML configuraton file that
+                The filename of a digitizer TOML configuration file that
                 will be used to configure the digitizer settings.
         """
 
@@ -33,7 +59,7 @@ class Digitizer:
 
     def __del__(self):
         # Explicitly free the digitizer before the instance is about to be
-        # destroyed, just in case the user doesn't call free() themsevles.
+        # destroyed, just in case the user doesn't call free() themselves.
         # If the digitizer has already been freed, then the compuscope SDK
         # will return an error code, which we can ignore.
         self.free()
@@ -50,9 +76,9 @@ class Digitizer:
         if self._digitizer_handle < 0:
             raise RuntimeError(f"Failed to get ownership of digitizer:\nErrno = {self._digitizer_handle}, {PyGage.GetErrorString(self._digitizer_handle)}")
 
-        # Get static informaton about the digitizer that's being used.
+        # Get static information about the digitizer that's being used.
         # We will need some of the fields to convert the raw values
-        # into voltages. The rest of the information is not necesarry,
+        # into voltages. The rest of the information is not necessary,
         # but we might as well save that metadata.
         self.system_info = PyGage.GetSystemInfo(self._digitizer_handle)
 
@@ -66,7 +92,7 @@ class Digitizer:
         """Loads a digitizer configuration from a TOML file.
 
         Parses a TOML configuration and puts the configuration values
-        into the aquisition_config, trigger_config, and channel_config
+        into the acquisition_config, trigger_config, and channel_config
         NamedTuples.
 
         Args:
@@ -78,7 +104,7 @@ class Digitizer:
         with open(filename,'rb') as f:
             config = tomllib.load(f)
 
-        # Parse the acquisition mode. Acqusition mode can be one of:
+        # Parse the acquisition mode. Acquisition mode can be one of:
         # - "single" / 1
         # - "dual" / 2
         # - "quad" / 4
@@ -185,7 +211,7 @@ class Digitizer:
         channel = channel_config['Channel']
         del channel_config['Channel']
 
-        # Set configuraton parameters in the device driver
+        # Set configuration parameters in the device driver
         status = PyGage.SetAcquisitionConfig(self._digitizer_handle,acquisition_config)
         if status < 0:
             raise RuntimeError("Error setting acquisition config:"
@@ -262,7 +288,7 @@ class Digitizer:
 
         Raises:
             RuntimeError:
-                An error occured when transferring the data from
+                An error occurred when transferring the data from
                 the digitizer.
         """
 
@@ -295,7 +321,7 @@ class Digitizer:
                 transfer_length = ret[2]
 
             # Warn the user if the start address and transfer length
-            # were changed. This might imply that the transfered data
+            # were changed. This might imply that the transferred data
             # is invalid, or that the user needs to change their
             # digitizer settings.
             if start_address != actual_start_address:
@@ -318,7 +344,7 @@ class Digitizer:
 
         Returns:
             timestamps:
-                Tigger timestamps in nanoseconds.
+                Trigger timestamps in nanoseconds.
 
         Raises:
             RuntimeError:
@@ -327,7 +353,7 @@ class Digitizer:
         """
         SEGMENT_START = 1
 
-        # For some reason, the start address for transfering
+        # For some reason, the start address for transferring
         # timestamps is 1, not 0, even though the API documentation
         # says the trigger address is address 0. Using address 0 is
         # fine when transferring the data, but is not correct when
@@ -534,7 +560,7 @@ def save_as_h5(filename,data,timestamps,capture_time,system_info,
         distance:
             Vector that maps range bins to distances. If not `None`,
             this vector must be the same length as the 2nd dimension
-            of `data`. This vector is created from the `rangecal` module.
+            of `data`. This vector is created from the `range_calibration` module.
 
     Raises:
         ValueError:
@@ -599,7 +625,7 @@ def save_as_h5(filename,data,timestamps,capture_time,system_info,
         # of parameters being passed in here. The Digitizer class
         # doesn't dictate whether the user uses volts, does range calibration,
         # etc., which then puts the onus on the user to do all of that
-        # and pass the appropriate arguments into this functon...
+        # and pass the appropriate arguments into this function...
         # The decision of making the digitizer only handle "mechanism",
         # and not "policy", has tradeoffs here.
         if data_is_volts:
@@ -625,7 +651,7 @@ def save_as_h5(filename,data,timestamps,capture_time,system_info,
             h5file['data/distance'].make_scale('distance')
             h5file['data/data'].dims[1].attach_scale(h5file['data/distance'])
 
-        # Add attibutes for system info metadata
+        # Add attributes for system info metadata
         h5file.create_group('digitizer/info')
         for key,val in system_info.items():
             h5file['digitizer/info'].attrs[key] = val
