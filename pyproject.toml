@@ -10,6 +10,11 @@ authors = [
 ]
 description = "Data acquisition code for the wingbeat-modulation lidar"
 readme = "README.md"
+dependencies = [
+    "tomli-w",
+    "h5py",
+    "numpy",
+]
 requires-python = ">=3.11"
 classifiers = [
     "License :: OSI Approved :: BSD License",
