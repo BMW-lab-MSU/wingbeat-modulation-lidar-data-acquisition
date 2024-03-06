@@ -1,6 +1,7 @@
 import unittest
 import tomllib
 import os
+import numpy as np
 from datetime import datetime
 
 import wingbeat_lidar.range_calibration as rangecal
@@ -64,5 +65,49 @@ class TestRangeCalibration(unittest.TestCase):
     def test_invalid_calibration_file_date(self):
         with self.assertRaises(RuntimeError):
             rangecal.load_calibration(self.RANGE_CAL_DIR + '/invalid-date-datatype.toml')
+
+    def test_compute_range(self):
+        range_bins = np.arange(0,128)
+        slope = 2
+        offset = 1
+        expected = np.arange(1,128*2,2)
+
+        # Must set calibration constants before computing range
+        rangecal.calibration['slope'] = slope
+        rangecal.calibration['offset'] = offset
+
+        distance = rangecal.compute_range(range_bins)
+
+        self.assertSequenceEqual(distance.tolist(), expected.tolist())
+
+    def test_compute_range2(self):
+        range_bins = np.arange(0,1024)
+        slope = 0.4223
+        offset = -0.5
+
+        expected = slope * range_bins + offset
+
+        # Must set calibration constants before computing range
+        rangecal.calibration['slope'] = slope
+        rangecal.calibration['offset'] = offset
+
+        distance = rangecal.compute_range(range_bins)
+
+        self.assertSequenceEqual(distance.tolist(), expected.tolist())
+
+    def test_compute_range3(self):
+        range_bins = np.arange(0,2048)
+        slope = 0.123
+        offset = 5.5
+
+        expected = slope * range_bins + offset
+
+        # Must set calibration constants before computing range
+        rangecal.calibration['slope'] = slope
+        rangecal.calibration['offset'] = offset
+
+        distance = rangecal.compute_range(range_bins)
+
+        self.assertSequenceEqual(distance.tolist(), expected.tolist())
         
         
