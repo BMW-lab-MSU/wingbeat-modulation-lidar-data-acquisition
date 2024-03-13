@@ -6,6 +6,7 @@ calibration.
 
 """
 
+import sys
 import argparse
 import tomllib
 import tomli_w
@@ -135,6 +136,32 @@ def calibrate(digitizer_config, calibration_file):
 
     _save_calibration(slope, offset, calibration_file)
 
+def main():
+
+    parser = argparse.ArgumentParser(
+        description='Wingbeat-modulation lidar range calibration program.',
+        epilog=('To use this program, you need a hard target and a rangefinder.'
+            ' During each iteration, you measure how far the hard target'
+            ' is away from the front of the lidar using a rangefinder.'
+            ' The hard target should be moved in steps of ~0.5 meters.')
+    )
+
+    parser.add_argument('-d', '--digitizer-config', required=False,
+        type=argparse.FileType('r'), default='./config/digitizer.toml',
+        help=('Which digitizer configuration TOML file to use. '
+            '(default: ./config/digitizer.toml)')
+    )
+    parser.add_argument('-c', '--calibration_file', required=False,
+        type=argparse.FileType('w'), default='./config/calibration.toml',
+        help=('Calibration file to save results to. '
+            '(default: ./config/calibration.toml)')
+    )
+
+    args = parser.parse_args()
+
+    calibrate(args.digitizer_config, args.calibration_file)
+
+    return 0
 
 if __name__ == "__main__":
-    calibrate()
+    sys.exit(main())
