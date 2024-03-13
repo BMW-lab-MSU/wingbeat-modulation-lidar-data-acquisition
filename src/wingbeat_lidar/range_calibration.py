@@ -97,7 +97,7 @@ def collect_data(digitizer):
     data = None
 
     while True:
-        user_input = input("Enter range in meters. To exit, type n. Range: ")
+        user_input = input("Enter the target's range in meters. To exit, type n. Range: ")
 
         if user_input.lower() == 'n':
             break
