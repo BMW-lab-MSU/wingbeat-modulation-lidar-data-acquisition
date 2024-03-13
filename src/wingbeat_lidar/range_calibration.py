@@ -2,8 +2,33 @@
 
 In order to assign physical distances to each range bin, a range calibration
 needs to be performed. This module provides methods to help with range
-calibration. 
+calibration.
 
+There are two common use cases for this module:
+1. Performing a range calibration by running this module as a script.
+2. Using a pre-existing calibration to convert range bins to distance.
+
+Examples:
+    Running the range calibration script:
+        python range_calibration.py
+
+    Printing usage information:
+        python range_calibration.py -h
+
+    Converting range bins to distance:
+        from wingbeat_lidar.digitizer import Digitizer
+        import wingbeat_lidar.range_calibration as rangecal
+
+        rangecal.load_calibration('config/calibration.toml')
+
+        # Collect data
+        digitizer = Digitizer('config/digitizer.toml')
+        digitizer.initialize()
+        digitizer.configure()
+        (data, timestamps, capture_time) = digitizer.capture()
+
+        range_bins = np.arange(0,digitizer.acquisition_config.SegmentSize)
+        distance = rangecal.compute_range(range_bins)
 """
 
 import sys
@@ -19,6 +44,15 @@ from wingbeat_lidar.digitizer import Digitizer
 calibration = {'slope': None, 'offset': None, 'date': None}
 
 def load_calibration(calibration_file):
+    """Load an existing calibration file.
+
+    Parses a TOML calibration configuration and loads the calibration
+    constants for later use.
+
+    Args:
+        calibration_file:
+            Path to the calibration TOML file.
+    """
     global calibration
 
     # Load the configuration file
@@ -46,6 +80,16 @@ def load_calibration(calibration_file):
 
 
 def _save_calibration(slope, offset, calibration_file):
+    """Save the calibration constants to a TOML calibration file.
+
+    Args:
+        slope:
+            Slope of the calibration equation.
+        offset:
+            Offset of the calibration equation.
+        calibration_file:
+            Where to save the calibration file.
+    """
     global calibration
 
     date = datetime.today().isoformat(sep=' ', timespec='minutes')
@@ -53,12 +97,33 @@ def _save_calibration(slope, offset, calibration_file):
     calibration['slope'] = slope
     calibration['offset'] =offset
     calibration['date'] = date
-    
+
     with open(calibration_file, 'wb') as f:
         tomli_w.dump(calibration, f)
 
 
 def compute_calibration_equation(data, distance):
+    """Compute the calibration equation.
+
+    The calibration equation is of the form:
+    distance = slope * range_bin + offset
+
+    Args:
+        data:
+            The data matrix. The matrix needs to be 3-D, where the first
+            dimension is the number of images captured during calibration.
+        distance:
+            List of target distances. Length must be the number of images
+            captured during calibration.
+
+    Returns:
+        slope:
+            Slope of the best-fit line.
+        offset:
+            Offset of the best-fit line.
+    """
+    # TODO: we might want to see if the fit was actually good or not...
+    # We can return an R^2 value for the fit.
 
     # Images are concatenated along the first dimension.
     N_CAPTURES = data.shape[0]
@@ -89,11 +154,43 @@ def compute_calibration_equation(data, distance):
 
 
 def compute_range(range_bins):
+    """Convert range bins into distances.
+
+    Args:
+        range_bins:
+            Array of range bin indices. This must be the number of samples
+            in each collected during each pulse, i.e. the number of rows
+            in each data capture.
+
+    Returns:
+        distance:
+            Array of distances, in meters, corresponding to the range bins.
+    """
     distance = calibration['slope'] * range_bins + calibration['offset']
     return distance
 
 
 def collect_data(digitizer):
+    """Prompt for and collect calibration data.
+
+    For each target distance, the user is prompted to enter the distance,
+    as measured by a rangefinder. One data capture is collected at each
+    target distance. Target distances should be in increments of about 0.5
+    meters. Data should be collected at about 40 distances (or enough to
+    get a good fit).
+
+    Args:
+        digitizer:
+            The digitizer object used to collect data.
+
+    Returns:
+        data:
+            3-D Matrix of collected data. The first dimension is the number of
+            calibration points taken. The other two dimensions are the size
+            of the data captures.
+        distance:
+            List of manually measured distances, as input by the user.
+    """
     distance = []
     data = None
 
@@ -102,7 +199,7 @@ def collect_data(digitizer):
 
         if user_input.lower() == 'n':
             break
-        
+
         try:
             distance.append(float(user_input))
         except ValueError:
@@ -118,6 +215,16 @@ def collect_data(digitizer):
 
 
 def _configure_digitizer(digitizer_config):
+    """Prepare the digitizer for data collection.
+
+    Args:
+        digitizer_config:
+            Digitizer TOML configuration file.
+
+    Returns:
+        digitizer:
+            The configured digitizer object.
+    """
     digitizer = Digitizer(digitizer_config)
     digitizer.initialize()
     digitizer.configure()
@@ -126,6 +233,16 @@ def _configure_digitizer(digitizer_config):
 
 
 def calibrate(digitizer_config, calibration_file):
+    """Main calibration routine.
+
+    This is entry-point for running the calibration.
+
+    Args:
+        digitizer_config:
+            Digitizer TOML configuration file.
+        calibration_file:
+            TOML file to save the calibration constants in.
+    """
     digitizer = _configure_digitizer(digitizer_config)
 
     (data, distance) = collect_data(digitizer)
@@ -137,7 +254,7 @@ def calibrate(digitizer_config, calibration_file):
     _save_calibration(slope, offset, calibration_file)
 
 def main():
-
+    """Entry-point for running the range calibration script."""
     parser = argparse.ArgumentParser(
         description='Wingbeat-modulation lidar range calibration program.',
         epilog=('To use this program, you need a hard target and a rangefinder.'
