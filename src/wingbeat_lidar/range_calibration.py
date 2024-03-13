@@ -268,7 +268,7 @@ def main():
         help=('Which digitizer configuration TOML file to use. '
             '(default: ./config/digitizer.toml)')
     )
-    parser.add_argument('-c', '--calibration_file', required=False,
+    parser.add_argument('-c', '--calibration-file', required=False,
         type=argparse.FileType('w'), default='./config/calibration.toml',
         help=('Calibration file to save results to. '
             '(default: ./config/calibration.toml)')
