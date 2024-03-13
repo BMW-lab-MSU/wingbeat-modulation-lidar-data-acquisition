@@ -78,6 +78,7 @@ def compute_calibration_equation(data, distance):
     # The target range bin is the independent variable, and range/distance
     # is the dependent variable. We append a column of ones to the
     # "coefficient matrix" so we can solve for the offset.
+    # The least squares solution is the first return value from lstsq.
     A = np.hstack((target_bin, np.ones((N_CAPTURES, 1))))
     x = np.linalg.lstsq(A, np.asarray(distance), rcond=None)[0]
     slope = x[0]
