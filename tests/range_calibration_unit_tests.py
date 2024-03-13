@@ -112,7 +112,7 @@ class TestRangeCalibration(unittest.TestCase):
     
     def test_compute_calibration_equation_synthetic_simple(self):
         N_CAPTURES = 9
-        distances = np.arange(0, N_CAPTURES)
+        distances = range(0, N_CAPTURES)
         data = np.zeros((N_CAPTURES, N_CAPTURES, 64))
 
         # Create a hard target at each range bin.
