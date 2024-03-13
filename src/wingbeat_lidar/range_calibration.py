@@ -13,7 +13,7 @@ import numpy as np
 import warnings
 from datetime import datetime
 
-# from wingbeat_lidar.digitizer import Digitizer
+from wingbeat_lidar.digitizer import Digitizer
 
 calibration = {'slope': None, 'offset': None, 'date': None}
 
@@ -93,7 +93,27 @@ def compute_range(range_bins):
 
 
 def collect_data(digitizer):
-    pass
+    distance = []
+    data = None
+
+    while True:
+        user_input = input("Enter range in meters. To exit, type n. Range: ")
+
+        if user_input.lower() == 'n':
+            break
+        
+        try:
+            distance.append(float(user_input))
+        except ValueError:
+            print("Input could not be converted to a number")
+        else:
+            (d, timestamps, capture_time) = digitizer.capture()
+            if data is not None:
+                data = np.vstack(data, d)
+            else:
+                data = d
+
+    return (data, distance)
 
 
 def _configure_digitizer(digitizer_config):
@@ -104,16 +124,16 @@ def _configure_digitizer(digitizer_config):
     return digitizer
 
 
-def calibrate(digitizer_config):
+def calibrate(digitizer_config, calibration_file):
     digitizer = _configure_digitizer(digitizer_config)
 
     (data, distance) = collect_data(digitizer)
 
-    (slope, offset) = compute_calibration_equation()
+    digitizer.free()
 
-    _save_calibration()
+    (slope, offset) = compute_calibration_equation(data, distance)
 
-    pass
+    _save_calibration(slope, offset, calibration_file)
 
 
 if __name__ == "__main__":
