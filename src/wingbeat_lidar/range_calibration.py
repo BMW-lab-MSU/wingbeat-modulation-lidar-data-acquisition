@@ -121,9 +121,10 @@ def compute_calibration_equation(data, distance):
             Slope of the best-fit line.
         offset:
             Offset of the best-fit line.
+        r2:
+            R^2 value of the fit.
     """
-    # TODO: we might want to see if the fit was actually good or not...
-    # We can return an R^2 value for the fit.
+    distance = np.asarray(distance)
 
     # Images are concatenated along the first dimension.
     N_CAPTURES = data.shape[0]
@@ -146,11 +147,16 @@ def compute_calibration_equation(data, distance):
     # "coefficient matrix" so we can solve for the offset.
     # The least squares solution is the first return value from lstsq.
     A = np.hstack((target_bin, np.ones((N_CAPTURES, 1))))
-    x = np.linalg.lstsq(A, np.asarray(distance), rcond=None)[0]
-    slope = x[0]
-    offset = x[1]
+    fit, residuals = np.linalg.lstsq(A, distance, rcond=None)[0:2]
+    slope = fit[0]
+    offset = fit[1]
 
-    return (slope, offset)
+    # Compute the goodness of fit using R^2 value:
+    # https://en.wikipedia.org/wiki/Coefficient_of_determination
+    total_sum_of_squares = N_CAPTURES * distance.var()
+    r2 = 1 - (residuals / total_sum_of_squares)
+
+    return (slope, offset, r2)
 
 
 def compute_range(range_bins):
@@ -249,9 +255,11 @@ def calibrate(digitizer_config, calibration_file):
 
     digitizer.free()
 
-    (slope, offset) = compute_calibration_equation(data, distance)
+    (slope, offset, r2) = compute_calibration_equation(data, distance)
 
     _save_calibration(slope, offset, calibration_file)
+
+    print(f"Calibration results:\n\tslope={slope}\n\toffset={offset}\n\tR^2={r2}")
 
 def main():
     """Entry-point for running the range calibration script."""

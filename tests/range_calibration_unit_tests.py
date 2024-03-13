@@ -122,10 +122,11 @@ class TestRangeCalibration(unittest.TestCase):
         expected_slope = 1
         expected_offset = 0
 
-        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+        (slope, offset, r2) = rangecal.compute_calibration_equation(data, distances)
 
         self.assertAlmostEqual(slope, expected_slope)
         self.assertAlmostEqual(offset, expected_offset)
+        self.assertEqual(r2,1)
     
     def test_compute_calibration_equation_synthetic_simple_with_noise(self):
         rng = np.random.default_rng()
@@ -142,10 +143,11 @@ class TestRangeCalibration(unittest.TestCase):
         expected_slope = 1
         expected_offset = 0
 
-        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+        (slope, offset, r2) = rangecal.compute_calibration_equation(data, distances)
 
         self.assertAlmostEqual(slope, expected_slope)
         self.assertAlmostEqual(offset, expected_offset)
+        self.assertEqual(r2, 1)
 
     def test_compute_calibration_equation_synthetic_float_slope_offset(self):
         rng = np.random.default_rng()
@@ -164,10 +166,11 @@ class TestRangeCalibration(unittest.TestCase):
         for i in range(0, N_CAPTURES):
             data[i,i,:] = -2
 
-        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+        (slope, offset, r2) = rangecal.compute_calibration_equation(data, distances)
 
         self.assertAlmostEqual(slope, expected_slope)
         self.assertAlmostEqual(offset, expected_offset)
+        self.assertEqual(r2, 1)
 
     def test_compute_calibration_equation_synthetic_not_every_range_bin(self):
         rng = np.random.default_rng()
@@ -186,7 +189,8 @@ class TestRangeCalibration(unittest.TestCase):
         for i in range(0, N_CAPTURES):
             data[i,i * int(1/expected_slope),:] = -5
 
-        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+        (slope, offset, r2) = rangecal.compute_calibration_equation(data, distances)
 
         self.assertAlmostEqual(slope, expected_slope)
         self.assertAlmostEqual(offset, expected_offset)
+        self.assertEqual(r2, 1)
