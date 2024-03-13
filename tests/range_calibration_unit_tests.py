@@ -109,5 +109,84 @@ class TestRangeCalibration(unittest.TestCase):
         distance = rangecal.compute_range(range_bins)
 
         self.assertSequenceEqual(distance.tolist(), expected.tolist())
-        
-        
+    
+    def test_compute_calibration_equation_synthetic_simple(self):
+        N_CAPTURES = 9
+        distances = np.arange(0, N_CAPTURES)
+        data = np.zeros((N_CAPTURES, N_CAPTURES, 64))
+
+        # Create a hard target at each range bin.
+        for i in range(0, N_CAPTURES):
+            data[i,i,:] = -10
+
+        expected_slope = 1
+        expected_offset = 0
+
+        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+
+        self.assertAlmostEqual(slope, expected_slope)
+        self.assertAlmostEqual(offset, expected_offset)
+    
+    def test_compute_calibration_equation_synthetic_simple_with_noise(self):
+        rng = np.random.default_rng()
+
+        N_CAPTURES = 9
+        distances = np.arange(0, N_CAPTURES)
+        data = np.zeros((N_CAPTURES, N_CAPTURES, 64))
+        data = data + rng.normal(size=data.shape)
+
+        # Create a hard target at each range bin.
+        for i in range(0, N_CAPTURES):
+            data[i,i,:] = -2
+
+        expected_slope = 1
+        expected_offset = 0
+
+        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+
+        self.assertAlmostEqual(slope, expected_slope)
+        self.assertAlmostEqual(offset, expected_offset)
+
+    def test_compute_calibration_equation_synthetic_float_slope_offset(self):
+        rng = np.random.default_rng()
+
+        expected_slope = 0.22
+        expected_offset = 5.213
+
+        N_CAPTURES = 16
+
+        distances = np.arange(0, N_CAPTURES) * expected_slope + expected_offset
+
+        data = np.zeros((N_CAPTURES, N_CAPTURES, 128))
+        data = data + rng.normal(size=data.shape)
+
+        # Create a hard target at each range bin.
+        for i in range(0, N_CAPTURES):
+            data[i,i,:] = -2
+
+        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+
+        self.assertAlmostEqual(slope, expected_slope)
+        self.assertAlmostEqual(offset, expected_offset)
+
+    def test_compute_calibration_equation_synthetic_not_every_range_bin(self):
+        rng = np.random.default_rng()
+
+        expected_slope = 1/4 
+        expected_offset = 0
+
+        N_CAPTURES = 32
+
+        distances = np.arange(0, N_CAPTURES) 
+
+        data = np.zeros((N_CAPTURES, N_CAPTURES * int(1/expected_slope), 1024))
+        data = data + rng.normal(size=data.shape)
+
+        # Create a hard target every fourth range bin.
+        for i in range(0, N_CAPTURES):
+            data[i,i * int(1/expected_slope),:] = -5
+
+        (slope, offset) = rangecal.compute_calibration_equation(data, distances)
+
+        self.assertAlmostEqual(slope, expected_slope)
+        self.assertAlmostEqual(offset, expected_offset)

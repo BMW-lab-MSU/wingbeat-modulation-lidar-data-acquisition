@@ -57,8 +57,33 @@ def _save_calibration(slope, offset, calibration_file):
         tomli_w.dump(calibration, f)
 
 
-def compute_calibration_equation():
-    pass
+def compute_calibration_equation(data, distance):
+
+    # Images are concatenated along the first dimension.
+    N_CAPTURES = data.shape[0]
+
+    target_bin = np.empty((N_CAPTURES, 1))
+
+    # Find the calibration target in each data capture.
+    for capture_num in range(0, N_CAPTURES):
+        # The target should correspond to the largest negative return value.
+        # We want to know the range bin where the minimum value occurred in
+        # each column as this is where we assume the calibration target was at.
+        target_bins = np.argmin(data[capture_num,:,:], axis=0)
+
+        # Assume that the target is located at the median range bin.
+        target_bin[capture_num] = np.median(target_bins)
+
+    # Perform least-squares regression to determine the slope and offset.
+    # The target range bin is the independent variable, and range/distance
+    # is the dependent variable. We append a column of ones to the
+    # "coefficient matrix" so we can solve for the offset.
+    A = np.hstack((target_bin, np.ones((N_CAPTURES, 1))))
+    x = np.linalg.lstsq(A, np.asarray(distance), rcond=None)[0]
+    slope = x[0]
+    offset = x[1]
+
+    return (slope, offset)
 
 
 def compute_range(range_bins):
