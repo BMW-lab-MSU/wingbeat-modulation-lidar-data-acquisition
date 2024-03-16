@@ -2,7 +2,6 @@ import unittest
 import tomllib
 import os
 import numpy as np
-from datetime import datetime
 
 import wingbeat_lidar.range_calibration as rangecal
 
