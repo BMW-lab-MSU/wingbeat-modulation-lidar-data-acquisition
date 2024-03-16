@@ -253,8 +253,6 @@ def calibrate(digitizer_config, calibration_file):
 
     (data, distance) = collect_data(digitizer)
 
-    digitizer.free()
-
     (slope, offset, r2) = compute_calibration_equation(data, distance)
 
     _save_calibration(slope, offset, calibration_file)
