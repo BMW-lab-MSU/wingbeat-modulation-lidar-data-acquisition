@@ -261,7 +261,7 @@ def calibrate(digitizer_config, calibration_file):
 
     _save_calibration(slope, offset, r2, calibration_file)
 
-    print(f"Calibration results:\n\tslope={slope}\n\toffset={offset}\n\tR^2={r2}")
+    print(f"Calibration results:\n\tslope = {slope}\n\toffset = {offset}\n\tR^2 = {r2}")
 
 def main():
     """Entry-point for running the range calibration script."""
