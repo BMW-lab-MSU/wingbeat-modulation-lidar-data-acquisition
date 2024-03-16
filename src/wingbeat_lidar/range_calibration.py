@@ -154,7 +154,7 @@ def compute_calibration_equation(data, distance):
     # Compute the goodness of fit using R^2 value:
     # https://en.wikipedia.org/wiki/Coefficient_of_determination
     total_sum_of_squares = N_CAPTURES * distance.var()
-    r2 = 1 - (residuals / total_sum_of_squares)
+    r2 = (1 - (residuals / total_sum_of_squares))[0]
 
     return (slope, offset, r2)
 
