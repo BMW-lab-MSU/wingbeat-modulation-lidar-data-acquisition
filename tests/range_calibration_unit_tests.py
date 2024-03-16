@@ -13,15 +13,17 @@ class TestRangeCalibration(unittest.TestCase):
     def test_save_calibration(self):
         slope = 1.23
         offset = -0.53
+        r2 = 0.78
         calibration_file = "test-calibration.toml"
 
-        rangecal._save_calibration(slope, offset, calibration_file)
+        rangecal._save_calibration(slope, offset, r2, calibration_file)
 
         with open(calibration_file, 'rb') as f:
             actual = tomllib.load(f)
 
         self.assertEqual(slope, actual['slope'])
         self.assertEqual(offset, actual['offset'])
+        self.assertEqual(r2, actual['r-squared'])
 
         # Date format is YYYY-MM-DD HH:MM
         self.assertRegex(actual['date'], '\d{4}-\d{2}-\d{2} \d{2}:\d{2}')
@@ -30,10 +32,11 @@ class TestRangeCalibration(unittest.TestCase):
     
     def test_save_and_load_calibration(self):
         slope = -13.23
-        offset = -4.53
+        offset = -4.52
+        r2 = 0.99
         calibration_file = "test-calibration.toml"
 
-        rangecal._save_calibration(slope, offset, calibration_file)
+        rangecal._save_calibration(slope, offset, r2, calibration_file)
         
         rangecal.load_calibration(calibration_file)
 
@@ -41,6 +44,8 @@ class TestRangeCalibration(unittest.TestCase):
         # variable in the range_calibration module
         actual = rangecal.calibration
 
+        # NOTE: load_calibration doesn't load in the r-squared value because it isn't
+        # needed for the calibration procedure.
         self.assertEqual(slope, actual['slope'])
         self.assertEqual(offset, actual['offset'])
 

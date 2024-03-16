@@ -60,7 +60,7 @@ def load_calibration(calibration_file):
         toml = tomllib.load(f)
 
     # Check that the configuration file has the correct fields
-    EXPECTED_FIELDS = {'slope','offset','date'}
+    EXPECTED_FIELDS = {'slope', 'offset', 'date', 'r-squared'}
     if toml.keys() != EXPECTED_FIELDS:
         raise RuntimeError("Range calibration file has an invalid set of keys:" +
             f"\nkeys = {toml.keys()}, expected = {EXPECTED_FIELDS}")
@@ -73,13 +73,18 @@ def load_calibration(calibration_file):
     if not isinstance(toml['date'],(str)):
         raise RuntimeError("date must be a string.")
 
-    # Set the calibration settings
+    # Set the calibration settings. We don't use the r-squared value from the
+    # configuration because it is not necessary for the calibration equation.
+    # TODO: date is also not necessary, so maybe we should consider not loading
+    # the date into the global calibration dictionary either. Or we just load
+    # everything into the calibration dictionary because users might want to look
+    # at the calibration metadata from python instead of opening the toml file?
     calibration['slope'] = toml['slope']
     calibration['offset'] = toml['offset']
     calibration['date'] = toml['date']
 
 
-def _save_calibration(slope, offset, calibration_file):
+def _save_calibration(slope, offset, r2, calibration_file):
     """Save the calibration constants to a TOML calibration file.
 
     Args:
@@ -90,12 +95,11 @@ def _save_calibration(slope, offset, calibration_file):
         calibration_file:
             Where to save the calibration file.
     """
-    global calibration
-
     date = datetime.today().isoformat(sep=' ', timespec='minutes')
 
     calibration['slope'] = slope
-    calibration['offset'] =offset
+    calibration['offset'] = offset
+    calibration['r-squared'] = r2
     calibration['date'] = date
 
     with open(calibration_file, 'wb') as f:
@@ -255,7 +259,7 @@ def calibrate(digitizer_config, calibration_file):
 
     (slope, offset, r2) = compute_calibration_equation(data, distance)
 
-    _save_calibration(slope, offset, calibration_file)
+    _save_calibration(slope, offset, r2, calibration_file)
 
     print(f"Calibration results:\n\tslope={slope}\n\toffset={offset}\n\tR^2={r2}")
 
