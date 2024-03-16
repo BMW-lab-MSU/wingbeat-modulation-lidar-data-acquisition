@@ -198,7 +198,7 @@ def collect_data(digitizer):
             List of manually measured distances, as input by the user.
     """
     distance = []
-    data = None
+    data_list = []
 
     while True:
         user_input = input("Enter the target's range in meters. To exit, type n. Range: ")
@@ -212,10 +212,10 @@ def collect_data(digitizer):
             print("Input could not be converted to a number")
         else:
             (d, timestamps, capture_time) = digitizer.capture()
-            if data is not None:
-                data = np.vstack(data, d)
-            else:
-                data = d
+            data_list.append(d)
+
+    # Concatenate list of 2-D data arrays into 3-D
+    data = np.stack(data_list, axis=0)
 
     return (data, distance)
 
