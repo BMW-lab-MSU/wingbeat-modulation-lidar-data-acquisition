@@ -218,8 +218,13 @@ def collect_data(digitizer):
             (d, timestamps, capture_time) = digitizer.capture()
             data_list.append(d)
 
-    # Concatenate list of 2-D data arrays into 3-D
-    data = np.stack(data_list, axis=0)
+    if data_list:
+        # Concatenate list of 2-D data arrays into 3-D
+        data = np.stack(data_list, axis=0)
+    else:
+        # No data were collected, so we return an empty data array, which will
+        # tells us to end the program and not comptue the calibration
+        data = np.array([])
 
     return (data, distance)
 
@@ -257,11 +262,15 @@ def calibrate(digitizer_config, calibration_file):
 
     (data, distance) = collect_data(digitizer)
 
-    (slope, offset, r2) = compute_calibration_equation(data, distance)
+    # Only compute and save the calibration if data were collected
+    if data.size > 0:
+        (slope, offset, r2) = compute_calibration_equation(data, distance)
 
-    _save_calibration(slope, offset, r2, calibration_file)
+        _save_calibration(slope, offset, r2, calibration_file)
 
-    print(f"Calibration results:\n\tslope = {slope}\n\toffset = {offset}\n\tR^2 = {r2}")
+        print(f"Calibration results:\n\tslope = {slope}\n\toffset = {offset}\n\tR^2 = {r2}")
+    else:
+        warnings.warn("No data were collected, so the calibration was not be saved.")
 
 def main():
     """Entry-point for running the range calibration script."""
