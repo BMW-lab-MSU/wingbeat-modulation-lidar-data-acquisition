@@ -155,10 +155,18 @@ def compute_calibration_equation(data, distance):
     slope = fit[0]
     offset = fit[1]
 
-    # Compute the goodness of fit using R^2 value:
-    # https://en.wikipedia.org/wiki/Coefficient_of_determination
-    total_sum_of_squares = N_CAPTURES * distance.var()
-    r2 = (1 - (residuals / total_sum_of_squares))[0]
+    # If not enough points were collected, residuals will be an empty array.
+    # Only compute the goodness of fit when the residuals aren't empty.
+    if residuals.size > 0:
+        # Compute the goodness of fit using R^2 value:
+        # https://en.wikipedia.org/wiki/Coefficient_of_determination
+        total_sum_of_squares = N_CAPTURES * distance.var()
+        r2 = (1 - (residuals / total_sum_of_squares))[0]
+    else:
+        warnings.warn("Residuals from fit were empty, indicating the fit was"
+                      "not good. Please rerun the calibration. Perhaps you"
+                      "need to collect more data points.")
+        r2 = []
 
     return (slope, offset, r2)
 
