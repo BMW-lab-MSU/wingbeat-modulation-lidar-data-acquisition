@@ -1,6 +1,6 @@
 # Running tests
 
-Before running any of these tests, make sure the `data_acquisition` package has been installed.
+Before running any of these tests, make sure the `wingbeat_lidar` package has been installed.
 
 ## Unit tests
 Run the unit tests with

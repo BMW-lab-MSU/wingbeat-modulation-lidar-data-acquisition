@@ -6,7 +6,7 @@ import os
 import PyGage
 
 from gagesupport.GageConstants import *
-from data_acquisition.digitizer import *
+from wingbeat_lidar.digitizer import *
 
 class TestDigitizer(unittest.TestCase):
 
@@ -42,7 +42,7 @@ class TestDigitizer(unittest.TestCase):
 
         self.digitizer.configure()
 
-        # Grab the configuraton dictionaries from the hardware
+        # Grab the configuration dictionaries from the hardware
         actual_acq = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle,CS_ACQUISITION_CONFIGURATION)
         actual_chan = PyGage.GetChannelConfig(self.digitizer._digitizer_handle,self.digitizer.channel_config.Channel,CS_ACQUISITION_CONFIGURATION)
         actual_trig = PyGage.GetTriggerConfig(self.digitizer._digitizer_handle,1,CS_ACQUISITION_CONFIGURATION)
@@ -71,7 +71,7 @@ class TestDigitizer(unittest.TestCase):
 
         self.digitizer.configure()
 
-        # Grab the configuraton dictionaries from the hardware
+        # Grab the configuration dictionaries from the hardware
         actual_acq = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle,CS_ACQUISITION_CONFIGURATION)
         actual_chan = PyGage.GetChannelConfig(self.digitizer._digitizer_handle,self.digitizer.channel_config.Channel,CS_ACQUISITION_CONFIGURATION)
         actual_trig = PyGage.GetTriggerConfig(self.digitizer._digitizer_handle,1,CS_ACQUISITION_CONFIGURATION)
@@ -100,7 +100,7 @@ class TestDigitizer(unittest.TestCase):
 
         self.digitizer.configure()
 
-        # Grab the configuraton dictionaries from the hardware
+        # Grab the configuration dictionaries from the hardware
         actual_acq = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle,CS_ACQUISITION_CONFIGURATION)
         actual_chan = PyGage.GetChannelConfig(self.digitizer._digitizer_handle,self.digitizer.channel_config.Channel,CS_ACQUISITION_CONFIGURATION)
         actual_trig = PyGage.GetTriggerConfig(self.digitizer._digitizer_handle,1,CS_ACQUISITION_CONFIGURATION)
@@ -129,7 +129,7 @@ class TestDigitizer(unittest.TestCase):
 
         self.digitizer.configure()
 
-        # Grab the configuraton dictionaries from the hardware
+        # Grab the configuration dictionaries from the hardware
         actual_acq = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle,CS_ACQUISITION_CONFIGURATION)
         actual_chan = PyGage.GetChannelConfig(self.digitizer._digitizer_handle,self.digitizer.channel_config.Channel,CS_ACQUISITION_CONFIGURATION)
         actual_trig = PyGage.GetTriggerConfig(self.digitizer._digitizer_handle,1,CS_ACQUISITION_CONFIGURATION)
@@ -158,7 +158,7 @@ class TestDigitizer(unittest.TestCase):
 
         self.digitizer.configure()
 
-        # Grab the configuraton dictionaries from the hardware
+        # Grab the configuration dictionaries from the hardware
         actual_acq = PyGage.GetAcquisitionConfig(self.digitizer._digitizer_handle,CS_ACQUISITION_CONFIGURATION)
         actual_chan = PyGage.GetChannelConfig(self.digitizer._digitizer_handle,self.digitizer.channel_config.Channel,CS_ACQUISITION_CONFIGURATION)
         actual_trig = PyGage.GetTriggerConfig(self.digitizer._digitizer_handle,1,CS_ACQUISITION_CONFIGURATION)
