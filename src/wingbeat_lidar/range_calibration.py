@@ -41,7 +41,8 @@ from datetime import datetime
 
 from wingbeat_lidar.digitizer import Digitizer
 
-calibration = {'slope': None, 'offset': None, 'date': None}
+calibration = {"slope": None, "offset": None, "date": None}
+
 
 def load_calibration(calibration_file):
     """Load an existing calibration file.
@@ -56,21 +57,23 @@ def load_calibration(calibration_file):
     global calibration
 
     # Load the configuration file
-    with open(calibration_file, 'rb') as f:
+    with open(calibration_file, "rb") as f:
         toml = tomllib.load(f)
 
     # Check that the configuration file has the correct fields
-    EXPECTED_FIELDS = {'slope', 'offset', 'date', 'r-squared'}
+    EXPECTED_FIELDS = {"slope", "offset", "date", "r-squared"}
     if toml.keys() != EXPECTED_FIELDS:
-        raise RuntimeError("Range calibration file has an invalid set of keys:" +
-            f"\nkeys = {toml.keys()}, expected = {EXPECTED_FIELDS}")
+        raise RuntimeError(
+            "Range calibration file has an invalid set of keys:"
+            + f"\nkeys = {toml.keys()}, expected = {EXPECTED_FIELDS}"
+        )
 
     # Check that the fields have the correct data types
-    if not isinstance(toml['slope'],(int, float)):
+    if not isinstance(toml["slope"], (int, float)):
         raise RuntimeError("slope must be an int or a float.")
-    if not isinstance(toml['offset'],(int, float)):
+    if not isinstance(toml["offset"], (int, float)):
         raise RuntimeError("offset must be an int or a float.")
-    if not isinstance(toml['date'],(str)):
+    if not isinstance(toml["date"], (str)):
         raise RuntimeError("date must be a string.")
 
     # Set the calibration settings. We don't use the r-squared value from the
@@ -79,9 +82,9 @@ def load_calibration(calibration_file):
     # the date into the global calibration dictionary either. Or we just load
     # everything into the calibration dictionary because users might want to look
     # at the calibration metadata from python instead of opening the toml file?
-    calibration['slope'] = toml['slope']
-    calibration['offset'] = toml['offset']
-    calibration['date'] = toml['date']
+    calibration["slope"] = toml["slope"]
+    calibration["offset"] = toml["offset"]
+    calibration["date"] = toml["date"]
 
 
 def _save_calibration(slope, offset, r2, calibration_file):
@@ -95,14 +98,14 @@ def _save_calibration(slope, offset, r2, calibration_file):
         calibration_file:
             Where to save the calibration file.
     """
-    date = datetime.today().isoformat(sep=' ', timespec='minutes')
+    date = datetime.today().isoformat(sep=" ", timespec="minutes")
 
-    calibration['slope'] = slope
-    calibration['offset'] = offset
-    calibration['r-squared'] = r2
-    calibration['date'] = date
+    calibration["slope"] = slope
+    calibration["offset"] = offset
+    calibration["r-squared"] = r2
+    calibration["date"] = date
 
-    with open(calibration_file, 'wb') as f:
+    with open(calibration_file, "wb") as f:
         tomli_w.dump(calibration, f)
 
 
@@ -140,7 +143,7 @@ def compute_calibration_equation(data, distance):
         # The target should correspond to the largest negative return value.
         # We want to know the range bin where the minimum value occurred in
         # each column as this is where we assume the calibration target was at.
-        target_bins = np.argmin(data[capture_num,:,:], axis=0)
+        target_bins = np.argmin(data[capture_num, :, :], axis=0)
 
         # Assume that the target is located at the median range bin.
         target_bin[capture_num] = np.median(target_bins)
@@ -163,9 +166,11 @@ def compute_calibration_equation(data, distance):
         total_sum_of_squares = N_CAPTURES * distance.var()
         r2 = (1 - (residuals / total_sum_of_squares))[0]
     else:
-        warnings.warn("Residuals from fit were empty, indicating the fit was"
-                      "not good. Please rerun the calibration. Perhaps you"
-                      "need to collect more data points.")
+        warnings.warn(
+            "Residuals from fit were empty, indicating the fit was"
+            "not good. Please rerun the calibration. Perhaps you"
+            "need to collect more data points."
+        )
         r2 = []
 
     return (slope, offset, r2)
@@ -184,7 +189,7 @@ def compute_range(range_bins):
         distance:
             Array of distances, in meters, corresponding to the range bins.
     """
-    distance = calibration['slope'] * range_bins + calibration['offset']
+    distance = calibration["slope"] * range_bins + calibration["offset"]
     return distance
 
 
@@ -213,9 +218,11 @@ def collect_data(digitizer):
     data_list = []
 
     while True:
-        user_input = input("Enter the target's range in meters. To exit, type n. Range: ")
+        user_input = input(
+            "Enter the target's range in meters. To exit, type n. Range: "
+        )
 
-        if user_input.lower() == 'n':
+        if user_input.lower() == "n":
             break
 
         try:
@@ -276,29 +283,46 @@ def calibrate(digitizer_config, calibration_file):
 
         _save_calibration(slope, offset, r2, calibration_file)
 
-        print(f"Calibration results:\n\tslope = {slope}\n\toffset = {offset}\n\tR^2 = {r2}")
+        print(
+            f"Calibration results:\n\tslope = {slope}\n\toffset = {offset}\n\tR^2 = {r2}"
+        )
     else:
         warnings.warn("No data were collected, so the calibration was not be saved.")
+
 
 def main():
     """Entry-point for running the range calibration script."""
     parser = argparse.ArgumentParser(
-        description='Wingbeat-modulation lidar range calibration program.',
-        epilog=('To use this program, you need a hard target and a rangefinder.'
-            ' During each iteration, you measure how far the hard target'
-            ' is away from the front of the lidar using a rangefinder.'
-            ' The hard target should be moved in steps of ~0.5 meters.')
+        description="Wingbeat-modulation lidar range calibration program.",
+        epilog=(
+            "To use this program, you need a hard target and a rangefinder."
+            " During each iteration, you measure how far the hard target"
+            " is away from the front of the lidar using a rangefinder."
+            " The hard target should be moved in steps of ~0.5 meters."
+        ),
     )
 
-    parser.add_argument('-d', '--digitizer-config', required=False,
-        type=argparse.FileType('r'), default='./config/digitizer.toml',
-        help=('Which digitizer configuration TOML file to use. '
-            '(default: ./config/digitizer.toml)')
+    parser.add_argument(
+        "-d",
+        "--digitizer-config",
+        required=False,
+        type=argparse.FileType("r"),
+        default="./config/digitizer.toml",
+        help=(
+            "Which digitizer configuration TOML file to use. "
+            "(default: ./config/digitizer.toml)"
+        ),
     )
-    parser.add_argument('-c', '--calibration-file', required=False,
-        type=argparse.FileType('w'), default='./config/calibration.toml',
-        help=('Calibration file to save results to. '
-            '(default: ./config/calibration.toml)')
+    parser.add_argument(
+        "-c",
+        "--calibration-file",
+        required=False,
+        type=argparse.FileType("w"),
+        default="./config/calibration.toml",
+        help=(
+            "Calibration file to save results to. "
+            "(default: ./config/calibration.toml)"
+        ),
     )
 
     args = parser.parse_args()
@@ -306,6 +330,7 @@ def main():
     calibrate(args.digitizer_config, args.calibration_file)
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
