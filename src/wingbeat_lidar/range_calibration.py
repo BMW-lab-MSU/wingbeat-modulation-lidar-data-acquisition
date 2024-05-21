@@ -10,10 +10,10 @@ There are two common use cases for this module:
 
 Examples:
     Running the range calibration script:
-        python range_calibration.py
+        python -m wingbeat_lidar.range_calibration
 
     Printing usage information:
-        python range_calibration.py -h
+        python -m wingbeat_lidar.range_calibration -h
 
     Converting range bins to distance:
         from wingbeat_lidar.digitizer import Digitizer
