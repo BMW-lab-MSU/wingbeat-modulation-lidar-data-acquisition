@@ -306,7 +306,7 @@ def main():
         "-d",
         "--digitizer-config",
         required=False,
-        type=argparse.FileType("r"),
+        type=str,
         default="./config/digitizer.toml",
         help=(
             "Which digitizer configuration TOML file to use. "
@@ -317,7 +317,7 @@ def main():
         "-c",
         "--calibration-file",
         required=False,
-        type=argparse.FileType("w"),
+        type=str,
         default="./config/calibration.toml",
         help=(
             "Calibration file to save results to. "
