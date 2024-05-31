@@ -518,126 +518,61 @@ class Digitizer:
                 RuntimeWarning,
             )
 
+    def save_data_in_h5(
+        h5file,
+        data,
+        timestamps,
+        capture_time,
+        data_is_volts=False,
+        distance=None,
+    ):
+        """Save data and metadata in an h5 file.
 
-# NOTE: we do not support pre-trigger data, forced-trigger timeouts, non-default timestamp modes,
-# dual-channel acquisition, or external clocking
-class AcquisitionConfig(NamedTuple):
-    """Acquisition configuration values.
+        Rather than creating an h5 file itself, this function requires the user
+        to pass in an h5py.File object. This allows users to add additional
+        groups, data, metadata, etc., to the h5 file before or after calling
+        this function.
 
-    Attributes:
-        SampleRate (int):
-            Digitizer sampling rate.
-        SegmentCount (int):
-            Number of segments to acquire. This is the number of trigger
-            events to acquire.
-        SegmentSize (int):
-            Number of samples to acquire for each trigger event.
-        TriggerDelay (int):
-            Number of samples between the trigger event and the start of
-            data acquisition.
-    """
+        Args:
+            h5file:
+                An h5py.File object to save the data to.
+            data:
+                The data array to save. Data must be 2- or 3-dimensional.
+                If it is 2-dimensional, the data must be a single capture.
+                If it is 3-dimensional, the first dimension should be the
+                number of captures.
+            timestamps:
+                The timestamps corresponding to each trigger event.
+                Timestamps can be 1- or 2-dimensional if the data is only
+                a single capture. Otherwise, the timestamps must be
+                2-dimensional, where the first dimensions is the number of
+                captures. The 2nd dimension must be equal to the 3rd
+                dimension of `data`.
+            capture_time:
+                Datetime strings corresponding to the start of each capture.
+                The length of this argument must be equal to the number of
+                captures taken, which is the first dimension of data and
+                timestamps.
+            data_is_volts:
+                Whether or not the captured data has units of volts.
+            distance:
+                Vector that maps range bins to distances. If not `None`,
+                this vector must be the same length as the 2nd dimension
+                of `data`. This vector is created from the `range_calibration` module.
 
-    SampleRate: int
-    SegmentCount: int
-    SegmentSize: int
-    TriggerDelay: int
-    Mode: int
+        Raises:
+            ValueError:
+                If dimensions of the input data do not match.
 
+        Example:
+            digitizer = Digitizer()
 
-class ChannelConfig(NamedTuple):
-    """Channel configuration values.
+            # capture data
+            # ...
 
-    Attributes:
-        Channel (int):
-            Channel number.
-        InputRange (int):
-            Input voltage range.
-        DcOffset (int):
-            DC offset for the channel. This can span the full scale
-            of the input voltage range, i.e. +/-(InputRange/2).
-    """
-
-    Channel: int
-    InputRange: int
-    DcOffset: int
-
-
-# NOTE: we are only going to support "simple" triggering mode using 1 trigger engine
-class TriggerConfig(NamedTuple):
-    """Trigger configuration values.
-
-    Attributes:
-        Condition (int):
-            Trigger condition. 0 for negative-edge and 1 for positive-edge.
-        Level (int):
-            Trigger level as a percentage of the input voltage range.
-        Source (int):
-            Trigger source. See GageConstants.py for valid values.
-    """
-
-    Condition: int
-    Level: int
-    Source: int
-
-
-def save_as_h5(
-    filename,
-    data,
-    timestamps,
-    capture_time,
-    system_info,
-    acquisition_config,
-    channel_config,
-    trigger_config,
-    data_is_volts=False,
-    distance=None,
-):
-    """Saves data and metadata in an h5 file.
-
-    Args:
-        filename:
-            The h5 filename to save the data to.
-        data:
-            The data array to save. Data must be 2- or 3-dimensional.
-            If it is 2-dimensional, the data must be a single capture.
-            If it is 3-dimensional, the first dimension should be the
-            number of captures.
-        timestamps:
-            The timestamps corresponding to each trigger event.
-            Timestamps can be 1- or 2-dimensional if the data is only
-            a single capture. Otherwise, the timestamps must be
-            2-dimensional, where the first dimensions is the number of
-            captures. The 2nd dimension must be equal to the 3rd
-            dimension of `data`.
-        capture_time:
-            Datetime strings corresponding to the start of each capture.
-            The length of this argument must be equal to the number of
-            captures taken, which is the first dimension of data and
-            timestamps.
-        system_info:
-            `system_info` field of the digitizer object that captured
-            the data.
-        acquisition_config:
-            `acquisition_config` field of the digitizer object that
-            captured the data.
-        channel_config:
-            `channel_config` field of the digitizer object that
-            captured the data.
-        trigger_config:
-            `trigger_config` field of the digitizer object that
-            captured the data.
-        data_is_volts:
-            Whether or not the captured data has units of volts.
-        distance:
-            Vector that maps range bins to distances. If not `None`,
-            this vector must be the same length as the 2nd dimension
-            of `data`. This vector is created from the `range_calibration` module.
-
-    Raises:
-        ValueError:
-            If dimensions of the input data do not match.
-    """
-    with h5py.File(filename, "w") as h5file:
+            with h5py.File("data.hdf5", "w") as h5:
+                digitizer.save_data_in_h5(h5, data, timestamps, capture_time)
+        """
 
         # Ensure the input dimensions match. If multiple captures were
         # taken, then the first dimension of all the inputs must match;
@@ -747,3 +682,65 @@ def save_as_h5(
         h5file.create_group("digitizer/config/trigger")
         for key, val in trigger_config._asdict().items():
             h5file["digitizer/config/trigger"].attrs[key] = val
+
+
+# NOTE: we do not support pre-trigger data, forced-trigger timeouts, non-default timestamp modes,
+# dual-channel acquisition, or external clocking
+class AcquisitionConfig(NamedTuple):
+    """Acquisition configuration values.
+
+    Attributes:
+        SampleRate (int):
+            Digitizer sampling rate.
+        SegmentCount (int):
+            Number of segments to acquire. This is the number of trigger
+            events to acquire.
+        SegmentSize (int):
+            Number of samples to acquire for each trigger event.
+        TriggerDelay (int):
+            Number of samples between the trigger event and the start of
+            data acquisition.
+    """
+
+    SampleRate: int
+    SegmentCount: int
+    SegmentSize: int
+    TriggerDelay: int
+    Mode: int
+
+
+class ChannelConfig(NamedTuple):
+    """Channel configuration values.
+
+    Attributes:
+        Channel (int):
+            Channel number.
+        InputRange (int):
+            Input voltage range.
+        DcOffset (int):
+            DC offset for the channel. This can span the full scale
+            of the input voltage range, i.e. +/-(InputRange/2).
+    """
+
+    Channel: int
+    InputRange: int
+    DcOffset: int
+
+
+# NOTE: we are only going to support "simple" triggering mode using 1 trigger engine
+class TriggerConfig(NamedTuple):
+    """Trigger configuration values.
+
+    Attributes:
+        Condition (int):
+            Trigger condition. 0 for negative-edge and 1 for positive-edge.
+        Level (int):
+            Trigger level as a percentage of the input voltage range.
+        Source (int):
+            Trigger source. See GageConstants.py for valid values.
+    """
+
+    Condition: int
+    Level: int
+    Source: int
+
