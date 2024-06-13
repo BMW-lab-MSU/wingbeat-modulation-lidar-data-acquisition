@@ -519,6 +519,7 @@ class Digitizer:
             )
 
     def save_data_in_h5(
+        self,
         h5file,
         data,
         timestamps,
@@ -667,20 +668,20 @@ class Digitizer:
 
         # Add attributes for system info metadata
         h5file.create_group("digitizer/info")
-        for key, val in system_info.items():
+        for key, val in self.system_info.items():
             h5file["digitizer/info"].attrs[key] = val
 
         # Add attributes for digitizer config
         h5file.create_group("digitizer/config/acquisition")
-        for key, val in acquisition_config._asdict().items():
+        for key, val in self.acquisition_config._asdict().items():
             h5file["digitizer/config/acquisition"].attrs[key] = val
 
         h5file.create_group("digitizer/config/channel")
-        for key, val in channel_config._asdict().items():
+        for key, val in self.channel_config._asdict().items():
             h5file["digitizer/config/channel"].attrs[key] = val
 
         h5file.create_group("digitizer/config/trigger")
-        for key, val in trigger_config._asdict().items():
+        for key, val in self.trigger_config._asdict().items():
             h5file["digitizer/config/trigger"].attrs[key] = val
 
 
