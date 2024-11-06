@@ -36,9 +36,7 @@ mode = "dual"
 sample_rate = 1e9 # 1 GS/s
 
 # The number of samples to acquire per pulse / trigger event.
-# This might as well always be a power of 2, as that should be more efficient
-# for the hardware (I'm not convinced that the SDK really supports arbitrary
-# sample depths, anyway).
+# This needs to be a power of 2; the hardware only supports powers of 2.
 # We have no reason to acquire pre-trigger data, thus n_samples covers
 # both the "Depth" and "SegmentSize" options in the official INI config. Setting
 # these to the same value results in no pre-trigger data being captured.
