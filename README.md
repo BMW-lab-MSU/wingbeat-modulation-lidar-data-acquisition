@@ -1,13 +1,4 @@
 # wingbeat-modulation-lidar-data-acquisition
-
-## Installation
-
-Editable installation:
-```
-pip install -e .
-```
-
-Normal installation:
-```
-pip install .
-```
+> [!WARNING]
+> This has been moved to the ORSL gitlab: https://gitlab.com/orsl/insect-lidar/data-acquisition
+> Future development should happen there.
